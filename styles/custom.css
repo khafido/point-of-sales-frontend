@@ -19,3 +19,9 @@
   .site-layout .site-layout-background {
     background: #fff;
   }
+  
+  #content-wrapper {
+    margin: 24px 16px 0 16px;
+    padding: 24px 24px 0 24px;
+    min-height: 600px;
+  }
