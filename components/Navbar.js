@@ -7,11 +7,12 @@ import {
     MenuUnfoldOutlined,
     SettingOutlined,
     MailOutlined,
+    PropertySafetyFilled,
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
 
-export default function Navbar() {
+export default function Navbar(props) {
     const [collapsed, setCollapsed] = useState(false);
 
     const toggle = () => {
@@ -64,16 +65,8 @@ export default function Navbar() {
                         onClick: toggle,
                     })}
                 </Header>
-                <Content
-                    className="site-layout-background"
-                    style={{
-                        margin: '24px 16px',
-                        padding: 24,
-                        minHeight: 280,
-                    }}
-                >
-                    Content
-                </Content>
+                {props.content}
+                {/* {(props.content) ? props.content : null} */}
             </Layout>
         </Layout>
     )
