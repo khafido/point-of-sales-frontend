@@ -20,7 +20,7 @@ const ContentPage = () => {
       style={{
         margin: '24px 16px 0 16px',
         padding: '24px 24px 0 24px',
-        minHeight: 280,
+        minHeight: 600,
       }}
     >
       Content

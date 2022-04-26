@@ -52,7 +52,7 @@ export default function Navbar(props) {
             <Sider trigger={null} collapsible collapsed={collapsed}>
                 <div className="logo" />
                 <Menu
-                    theme="light"
+                    theme="dark"
                     mode="inline"
                     defaultSelectedKeys={['1']}
                     items={items}
