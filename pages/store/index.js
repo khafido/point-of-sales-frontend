@@ -7,12 +7,7 @@ import Layout from '@components/Layout';
 export default function Index() {
   return (
     <Layout>
-      <Content
-        id='content-wrapper'
-        className="site-layout-background"
-        >
-        Store Index
-      </Content>
+      Store Index
     </Layout>
   )
 }
