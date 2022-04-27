@@ -39,8 +39,7 @@ export default function GeneralLayout(props) {
                     <Content id='content-wrapper' className="site-layout-background">
                         {props.content}
                     </Content>
-                </Layout>
-                <Footer style={{ textAlign: 'center' }}>HIPPOS ©2022 Created by CDC - Team 3</Footer>
+                </Layout>                
             </Layout>
         </Layout>
     )
