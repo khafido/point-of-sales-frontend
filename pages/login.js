@@ -10,14 +10,8 @@ export default function Login() {
 
     return (
         <>
-            <Head>
-                <title>Login - HIPPOS</title>
-                <meta name="description" content="HIPPOS - CDC Team 3" />
-                <link rel="icon" href="/favicon.ico" />
-                <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
-            </Head>
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="w-[200px] px-12 py-6 mt-4 text-left bg-white shadow-lg">
+                <div className="w-[300px] px-12 py-6 mt-4 text-left bg-white shadow-lg">
                     <h3 className="pb-3 text-2xl font-bold text-center">Log In</h3>
                     <Form
                         name="normal_login"
