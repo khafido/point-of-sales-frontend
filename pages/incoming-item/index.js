@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 
 export default function Index() {
   return (
-    <Layout>
+    <Layout title="Incoming Item" subtitle="">
       Incoming Item
     </Layout>
   )

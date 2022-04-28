@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import { Image, Layout, Menu } from 'antd';
+import { Image, Layout, Menu, PageHeader } from 'antd';
 import {
     AppstoreOutlined,
     MenuFoldOutlined,
@@ -46,7 +46,12 @@ export default function GeneralLayout(props) {
                 </Header>
                 <Layout>
                     <Content id='content-wrapper' className="site-layout-background">
-                        {props.content}
+                    <PageHeader
+                        // onBack={() => null}
+                        title={props.title}
+                        subTitle={props.subTitle}
+                    />
+                    {props.content}
                     </Content>
                 </Layout>                
             </Layout>
