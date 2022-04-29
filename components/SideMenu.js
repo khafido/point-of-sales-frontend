@@ -19,15 +19,16 @@ import { useRouter } from 'next/router';
 
 const SideMenu = () => {
     const router = useRouter();
-    const [current, setCurrent] = useState(router.pathname);
+    const [current, setCurrent] = useState(router.pathname.split('/')[1]);
 
     useEffect(() => {
         if (router) {
-            if (current == router.pathname) {                
-                setCurrent(router.pathname);  
+            let path = router.pathname.split('/')[1];
+            if (current == path) {                
+                setCurrent(path);  
             }
         }
-    }, [current]);
+    }, [router.pathname, current]);
 
     function getItem(label, key, path, icon, children, type) {
         return {
@@ -54,25 +55,21 @@ const SideMenu = () => {
         getItem('Parameter', 'parameter', '/parameter', <ControlOutlined />, null),
         getItem('Customer', 'customer', '/customer', <UsergroupDeleteOutlined />, null),
     ];
-
-    function sleep(time) {
-        return new Promise((resolve) => setTimeout(resolve, time));
-    }
-
+    
     let handleClick = (e) => {
-        router.push(e.key);
+        router.push("/"+e.key);
     }
 
     return (
         <>
-        <Menu
-            onClick={handleClick}
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={current.replace('/', '')}
-            items={items}
+            <Menu
+                onClick={handleClick}
+                theme="dark"
+                mode="inline"
+                defaultSelectedKeys={current.replace('/', '')}
+                items={items}
             />
-            </>
+        </>
     )
 }
 

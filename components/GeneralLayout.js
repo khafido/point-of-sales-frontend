@@ -31,7 +31,7 @@ export default function GeneralLayout(props) {
             <Sider trigger={null} collapsible collapsed={collapsed} onCollapse={toggle}>
                 <SideMenu />
             </Sider>
-            <Layout className="site-layout" style={{height:"100vh"}}>
+            <Layout className="site-layout" style={{minHeight:"100vh"}}>
                 <Header className="site-layout-background" style={{ padding: 0 }}>
                     {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
                         className: 'trigger',
