@@ -1,48 +1,75 @@
 import { Menu } from 'antd';
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
-    AppstoreOutlined,
-    SettingOutlined,
-    MailOutlined,
+    ShopOutlined,
+    EditOutlined,
+    HomeOutlined,
+    SnippetsOutlined,
+    UserOutlined,
+    ApiOutlined,
+    CreditCardOutlined,
+    ApartmentOutlined,
+    ImportOutlined,
+    TagOutlined,
+    ControlOutlined,
+    UsergroupDeleteOutlined,
 } from '@ant-design/icons';
+import { useRouter } from 'next/router';
 
-const SideMenu = ()=> {
+const SideMenu = () => {
+    const router = useRouter();
+    const [current, setCurrent] = useState(router.pathname.split('/')[1]);
 
-    function getItem(label, key, icon, children, type) {
+    useEffect(() => {
+        if (router) {
+            let path = router.pathname.split('/')[1];
+            if (current == path) {                
+                setCurrent(path);  
+            }
+        }
+    }, [router.pathname, current]);
+
+    function getItem(label, key, path, icon, children, type) {
         return {
+            label,
             key,
+            path,
             icon,
             children,
-            label,
             type,
         };
     }
 
     const items = [
-        getItem('Navigation One', 'sub1', <MailOutlined />, [
-            getItem('Item 1', 'g1', null, [getItem('Option 1', '1'), getItem('Option 2', '2')], 'group'),
-            getItem('Item 2', 'g2', null, [getItem('Option 3', '3'), getItem('Option 4', '4')], 'group'),
-        ]),
-        getItem('Navigation Two', 'sub2', <AppstoreOutlined />, [
-            getItem('Option 5', '5'),
-            getItem('Option 6', '6'),
-            getItem('Submenu', 'sub3', null, [getItem('Option 7', '7'), getItem('Option 8', '8')]),
-        ]),
-        getItem('Navigation Three', 'sub4', <SettingOutlined />, [
-            getItem('Option 9', '9'),
-            getItem('Option 10', '10'),
-            getItem('Option 11', '11'),
-            getItem('Option 12', '12'),
-        ]),
+        getItem('Dashboard', 'dashboard', '/dashboard', <HomeOutlined />, null),
+        getItem('Category', 'category', '/category', <EditOutlined />, null),
+        getItem('Store', 'store', '/store', <ShopOutlined />, null),
+        getItem('Item', 'item', '/item', <SnippetsOutlined />, null),
+        getItem('User', 'user', '/user', <UserOutlined />, null),
+        getItem('Supplier', 'supplier', '/supplier', <ApiOutlined />, null),
+        getItem('Voucer', 'voucher', '/voucher', <CreditCardOutlined />, null),
+        getItem('Store Item', 'store-item', '/store-item', <ApartmentOutlined />, null),
+        getItem('Incoming Item', 'incoming-item', '/incoming-item', <ImportOutlined />, null),
+        getItem('Price Rule', 'price-rule', '/price-rule', <TagOutlined />, null),
+        getItem('Parameter', 'parameter', '/parameter', <ControlOutlined />, null),
+        getItem('Customer', 'customer', '/customer', <UsergroupDeleteOutlined />, null),
     ];
+    
+    let handleClick = (e) => {
+        router.push("/"+e.key);
+    }
+
     return (
-        <Menu
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={['1']}
-            items={items}
-        />
+        <>
+            <Menu
+                onClick={handleClick}
+                theme="dark"
+                mode="inline"
+                defaultSelectedKeys={current.replace('/', '')}
+                items={items}
+            />
+        </>
     )
 }
 
