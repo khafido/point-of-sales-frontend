@@ -2,49 +2,110 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 import Link from 'next/link';
 import Search from 'antd/lib/input/Search';
-import { Button,Modal, Table } from 'antd';
-import {UserAddOutlined, EditOutlined, DeleteOutlined} from '@ant-design/icons';
+import { Button,Col,Row, Form,Input,Modal, notification, Table } from 'antd';
+import * as category from 'api/Category';
+
 
 export default function Index() {
   // state for modal
   const [visible, setVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalBody, setModalBody] = useState((<div></div>));
+  const [formData, setFormData] = useState({});
+  const [tableData, setTableData] = useState([]);
 
-  const showModal = () => {
+  const showModal = (type) => {
     setVisible(true);
+    switch(type){
+      case 'add':
+        setModalTitle('Add New Category')
+        setModalBody((
+          <div>
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} >
+              <Form.Item label='Name'name='name' hasFeedback required rules={[{required: true, message: 'Please input category name'}]} >
+                <Input maxLength={255}/>
+              </Form.Item>
+            </Form>
+          </div>
+        ))
+        break
+        case 'edit':
+          setModalTitle('Edit Category')
+          break
+        case 'delete':
+          setModalTitle('Delete Category')
+          break
+    }
   };
+
+  const onFieldsChange = (changedField, allFields)=> {
+    console.log(allFields)
+    let data = {}
+    allFields.forEach(element => {
+      data[`${element.name[0]}`] = {
+        value: element.value,
+        errors: element.errors
+      }
+    });
+    console.log(data)
+    setFormData(data)
+  }
+
 
   const handleOk = () => {
     setConfirmLoading(true);
+    category.addCategory({
+      name:formData.name.value
+    }).then(response=> {
+      setTimeout(() => {
+        notification.success({
+          message: response.message,
+          description: JSON.stringify(response.result)
+        })
+      }, 1000)
+    })
     setTimeout(() => {
       setVisible(false);
       setConfirmLoading(false);
-    }, 1000);
+    }, 1000)
   };
+
+  const validateForm = ()=> {
+    let filled = false
+    for(var key of Object.keys(formData)) {
+      if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
+        filled = true
+        break
+      }
+    }
+  }
+
+  useEffect(() => {
+    validateForm()
+  }, [formData])
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
     setVisible(false);
   }
 
+ 
 
 
-
-  const [categoryData, setCategoryData] = useState([]);
   useEffect(() => {
-    const sortedData = data.sort((a, b) => a.name.localeCompare(b.name));
-    const numberedData = sortedData.map((item, index) => ({
-        ...item,
-        numrow: index + 1,
-    }));
-    setCategoryData(numberedData);
+    setTableLoading(true)
+    category.listCategory(true, 0, 10)
+      .then(response=> {
+        setTableData(response.result)
+        setTableLoading(false)
+      })
+    console.log(tableData)
   }, []);
 
   const columns = [
-    {
-      title: '#',
-      dataIndex: 'numrow',
-    },
+    
     {
       title: 'ID',
       dataIndex: 'id',
@@ -65,35 +126,17 @@ export default function Index() {
         <div className='place-content-center'>
           <Link href={'/user/detail/'+r.id}>
               <a className="float-left text-center px-4 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">            
-                <EditOutlined /> Edit
+               Edit
               </a>
           </Link>
 
           <a onClick={() => deleteUser(r.id)} className="float-right text-center inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-            <DeleteOutlined /> Delete
+           Delete
           </a>
         </div>
     }
   ].filter(item => !item.hidden);
 
-    
-  const data = [
-    {
-      id: 1,
-      name: "Category 1",
-      action: ''
-    },
-    {
-      id: 2,
-      name: "Category 2",
-      action: ''
-    },
-    {
-      id: 3,
-      name: "Category 3",
-      action: ''
-    },
-  ];
   
   function onChange(pagination, filters, sorter, extra) {
     console.log('params', pagination, filters, sorter, extra);
@@ -113,12 +156,12 @@ export default function Index() {
       ...item,
       numrow: index + 1,
     }));
-    setCategoryData(numberedFilteredData);
+    setTableData(numberedFilteredData);
   }
 
   const filterData = (e) => {
     const search = e.target.value;
-    const filteredData = data.filter(
+    const filteredData = tableData.filter(
       item => 
         item.name.toLowerCase().includes(search.toLowerCase()) 
       );
@@ -126,7 +169,7 @@ export default function Index() {
       ...item,
       numrow: index + 1,
     }));
-    setCategoryData(numberedFilteredData);
+    setTableData(numberedFilteredData);
   }
 
   const deleteUser = (id) => {
@@ -136,26 +179,33 @@ export default function Index() {
 
   return (
     <Layout title="Category" subtitle="">
-      <div className='w-[200px] float-left'>
-        <Button type='primary' onClick={showModal}>
-          Add Category
-        </Button>
+      <Row>
+        <Col span={6}>
+        <Search onChange={filterData} />
+        </Col>
+        <Col span={18}>
+          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Category</Button>
+        </Col>
+      </Row>
+      <br />
+      <Table  
+      columns={columns} 
+      dataSource={tableData.currentPageContent} 
+      onChange={onChange}
+      loading={tableLoading}  />
         <Modal
-          title="Add Category"
+          title={modalTitle}
           visible={visible}
           onOk={handleOk}
           confirmLoading={confirmLoading}
           onCancel={handleCancel}
         >
-          <p>Modal</p>
+       {modalBody}
         </Modal>
-      </div>
-      <div className='w-[200px] float-right'>
-        <Search onChange={filterData} />
-      </div>
-      <br />
-      <br />
-      <Table className='' columns={columns} dataSource={categoryData} onChange={onChange}  />
+  
+      
+
+     
    
     </Layout>
   )

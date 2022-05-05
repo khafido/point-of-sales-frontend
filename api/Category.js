@@ -19,7 +19,7 @@ export async function listCategory(active, page, size){
         .catch(err => console.log(err))
 }
 
-export async function addCategory(name){
+export async function addCategory({name}){
     return apiClient
         .post(url, {
             name
