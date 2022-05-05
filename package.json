@@ -12,6 +12,8 @@
     "@ant-design/icons": "^4.7.0",
     "antd": "4.20.0",
     "antd-button-color": "^1.0.4",
+    "axios": "^0.27.2",
+    "moment": "^2.29.3",
     "next": "12.1.5",
     "react": "18.0.0",
     "react-dom": "18.0.0"
