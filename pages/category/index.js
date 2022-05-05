@@ -16,6 +16,15 @@ export default function Index() {
   const [formData, setFormData] = useState({});
   const [tableData, setTableData] = useState([]);
 
+  // testing filter 
+  const [categoryData, setCategoryData] = useState();
+  useEffect(() => {
+    category.listCategory(true,0,10)
+    .then(response => {
+      setCategoryData(response.result.currentPageContent)
+    })
+  },[])
+
   const showModal = (type) => {
     setVisible(true);
     switch(type){
@@ -95,21 +104,27 @@ export default function Index() {
     setTableLoading(true)
     category.listCategory(true, 0, 10)
       .then(response=> {
-        setTableData(response.result.currentPageContent)
+        const sortedData = response.result.currentPageContent.sort((a, b) => a.name.localeCompare(b.name));
+        const numberedData = sortedData.map((item, index) => ({
+          ...item,
+          numrow: index + 1,
+        }));
+        setTableData(numberedData)
         setTableLoading(false)
       })
     console.log(tableData)
-  }, []);
+  }, [visible]);
 
   const columns = [
-    
     {
       title: 'ID',
+      key: 'id',
       dataIndex: 'id',
       hidden: true,
     },
     {
       title: 'Name',
+      key:'name',
       dataIndex: 'name',
       sorter: {
         compare: (a, b) => a.name - b.name,
@@ -119,6 +134,7 @@ export default function Index() {
     {
       title: 'Action',
       dataIndex: 'action',
+      key: 'action',
       render: (t, r) => 
         <div className='place-content-center'>
           <Link href={'/user/detail/'+r.id}>
@@ -157,7 +173,7 @@ export default function Index() {
 
   const filterData = (e) => {
     const search = e.target.value;
-    const filteredData = tableData.filter(
+    const filteredData = categoryData.filter(
       item => 
         item.name.toLowerCase().includes(search.toLowerCase()) 
       );
