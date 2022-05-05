@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Content } from 'antd/lib/layout/layout';
 import Layout from '@components/Layout';
-import { useRouter } from 'next/router';
-import Dashboard from 'pages/dashboard';
+import { PageHeader } from 'antd';
 
 export default function Home() {
   return (
-    <Dashboard />
+    <Layout title="Dashboard" subtitle="">      
+      Dashhboard
+    </Layout>
   )
 }

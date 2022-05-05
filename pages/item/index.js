@@ -3,8 +3,8 @@ import Layout from '@components/Layout';
 
 export default function Index() {
   return (
-    <Layout title="Store" subtitle="">
-      Store
+    <Layout title="Item" subtitle="">
+      Item
     </Layout>
   )
 }
