@@ -25,10 +25,8 @@ export async function addCategory({name}){
             name
         })
         .then(response => {
-            if(response){
-                return response.data
-            }
-            return response.status
+            console.log(response)
+            return response.data
         })
         .catch(err => console.log(err))
 }

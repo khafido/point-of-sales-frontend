@@ -60,10 +60,10 @@ export default function Index() {
       name:formData.name.value
     }).then(response=> {
       setTimeout(() => {
-        notification.success({
-          message: response.message,
-          description: JSON.stringify(response.result)
-        })
+          notification.success({
+            message: response.message,
+            description: JSON.stringify(response.result)
+          })  
       }, 1000)
     })
     setTimeout(() => {
@@ -91,14 +91,11 @@ export default function Index() {
     setVisible(false);
   }
 
- 
-
-
   useEffect(() => {
     setTableLoading(true)
     category.listCategory(true, 0, 10)
       .then(response=> {
-        setTableData(response.result)
+        setTableData(response.result.currentPageContent)
         setTableLoading(false)
       })
     console.log(tableData)
@@ -140,7 +137,7 @@ export default function Index() {
   
   function onChange(pagination, filters, sorter, extra) {
     console.log('params', pagination, filters, sorter, extra);
-    let filteredData = categoryData;
+    let filteredData = tableData;
     // sort filterdata by sorter.field asc
     if (sorter.field) {
       filteredData = filteredData.sort((a, b) => {
@@ -152,9 +149,8 @@ export default function Index() {
       }
       );
     }
-    const numberedFilteredData = filteredData.map((item, index) => ({
-      ...item,
-      numrow: index + 1,
+    const numberedFilteredData = filteredData.map((item) => ({
+      ...item
     }));
     setTableData(numberedFilteredData);
   }
@@ -165,9 +161,8 @@ export default function Index() {
       item => 
         item.name.toLowerCase().includes(search.toLowerCase()) 
       );
-    const numberedFilteredData = filteredData.map((item, index) => ({
-      ...item,
-      numrow: index + 1,
+    const numberedFilteredData = filteredData.map((item) => ({
+      ...item
     }));
     setTableData(numberedFilteredData);
   }
@@ -190,7 +185,7 @@ export default function Index() {
       <br />
       <Table  
       columns={columns} 
-      dataSource={tableData.currentPageContent} 
+      dataSource={tableData} 
       onChange={onChange}
       loading={tableLoading}  />
         <Modal
