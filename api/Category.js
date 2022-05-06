@@ -2,16 +2,16 @@ import apiClient from "api";
 
 const url = '/category'
 
-export async function listCategory(isPaginated, page, size, searchValue, sortBy, sortDir){
+export async function listCategory(isPaginated, page, size, searchVal, sortBy, sortDirection){
     return apiClient
         .get(url, {
             params: {
                 isPaginated,
                 page,
                 size,
-                searchValue,
+                searchVal,
                 sortBy,
-                sortDir
+                sortDirection
         }})
         .then(response => {
             if(response){

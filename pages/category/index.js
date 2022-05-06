@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import Link from 'next/link';
 import Search from 'antd/lib/input/Search';
 import { Button,Col,Row, Form,Input,Modal, notification, Table, message, Space } from 'antd';
 import * as category from 'api/Category';
-import { duration } from 'moment';
-
 
 export default function Index() {
   const [form] = Form.useForm()
@@ -20,15 +17,13 @@ export default function Index() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
- 
-
+  
+  // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
   const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
   const [tableTotalPages, setTableTotalPages] = useState(0)
 
-
-  // testing filter 
   const onSearchData = (value , e)=> {
     setSearchLoading(true)
     setSearchVal(value)
@@ -119,7 +114,6 @@ export default function Index() {
     setFormData(data)
   }
 
-  // TODO clear form field after submitting
   const handleOk = () => {
     setConfirmLoading(true);
     switch(submitParam.type){
@@ -187,19 +181,19 @@ export default function Index() {
     
   };
 
-  const validateForm = ()=> {
-    let filled = false
-    for(var key of Object.keys(formData)) {
-      if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
-        filled = true
-        break
-      }
-    }
-  }
+  // const validateForm = ()=> {
+  //   let filled = false
+  //   for(var key of Object.keys(formData)) {
+  //     if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
+  //       filled = true
+  //       break
+  //     }
+  //   }
+  // }
 
-  useEffect(() => {
-    validateForm()
-  }, [formData])
+  // useEffect(() => {
+  //   validateForm()
+  // }, [formData])
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
@@ -212,6 +206,7 @@ export default function Index() {
     page = tablePagination.page-1, 
     pageSize = tablePagination.pageSize,) => {
       setTableLoading(true)
+      console.log(searchBy)
       category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
       .then(result=> {
         if(result.result) {
@@ -240,9 +235,11 @@ export default function Index() {
       hidden: true,
     },
     {
-      title: 'Name',
+      title: 'Category Name',
       key:'name',
       dataIndex: 'name',
+      align: 'center',
+      width:'30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
         multiple: 1,
@@ -252,8 +249,11 @@ export default function Index() {
       title: 'Action',
       dataIndex: 'action',
       key: 'action',
+      align: 'center',
+      width: '30%',
       render: (t, r) => (
         <Space size="middle">
+          
           <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
           <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
         </Space>
@@ -268,16 +268,11 @@ export default function Index() {
     })
   }
 
-  const deleteUser = (id) => {
-    alert("delete/"+id);
-  }
-
-
   return (
     <Layout title="Category" subtitle="">
       <Row>
         <Col span={6}>
-        <Search onChange={onSearchData} loading={searchLoading} />
+        <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
           <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Category</Button>
@@ -288,12 +283,14 @@ export default function Index() {
       columns={columns} 
       dataSource={tableData} 
       loading={tableLoading}
+      rowKey={(record)=> record.id}
       pagination={{
         onChange: onChangePagination,
         total: tableTotalPages * tablePagination.pageSize,
         pageSize: tablePagination.pageSize,
         showSizeChanger: true
       }}
+
       />
         <Modal
           title={modalTitle}
