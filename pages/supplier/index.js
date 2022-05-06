@@ -16,7 +16,7 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTitle, setModalTitle] = useState('')
   const [modalBody, setModalBody] = useState((<div></div>))
-  const [modalFooterConfig, setModalFooterConfig] = useState({submitBtnText: 'Submit', submitBtnType: 'primary'})
+  const [modalFooterConfig, setModalFooterConfig] = useState({submitBtnText: '', submitBtnType: ''})
 
   const [searchVal, setSearchVal] = useState('')
   const [formData, setFormData] = useState({})
