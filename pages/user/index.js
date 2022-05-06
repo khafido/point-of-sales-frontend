@@ -4,13 +4,36 @@ import { Image, Table } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
 import { DeleteOutlined, EditOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 export default function Index() {
   const [userData, setUserData] = useState([]);
+  const [initialData, setInitialData] = useState([]);
   const [order, setOrder] = useState({});
 
   useEffect(() => {
-    const sortedData = data.sort((a, b) => a.name.localeCompare(b.name));
+    axios.get(process.env.NEXT_PUBLIC_API_URL+'v1/user/').then((res) => {
+      let users = res.data.map((item, key) => {
+        item.key = item.id;
+        item.numrow = key+1;
+        item.name = item.firstName+' '+item.lastName;
+        if (!item.photo) {
+          item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
+        }
+        item.roles = item.roles.map((role) => {
+          return role.name.replace('ROLE_', '');
+        }).join(', ');
+        return item;
+      });
+
+      setInitialData(users);
+      setUserData(users);
+    }).catch((err) => {
+      console.log(err);
+    });
+
+    const sortedData = userData.sort((a, b) => a.name.localeCompare(b.name));
+
     const numberedData = sortedData.map((item, index) => ({
       ...item,
       numrow: index + 1,
@@ -52,6 +75,7 @@ export default function Index() {
       title: 'Username',
       key: 'username',
       dataIndex: 'username',
+      width: 100,
       sorter: {
         compare: (a, b) => a.username - b.username,
       },
@@ -60,6 +84,7 @@ export default function Index() {
       title: 'Email',
       key: 'email',
       dataIndex: 'email',
+      width: 150,
     },
     {
       title: 'Phone',
@@ -78,16 +103,16 @@ export default function Index() {
       width: 85,
     },
     {
-      title: 'Role',
-      key: 'role',
+      title: 'Roles',
+      key: 'roles',
       width: 150,
-      dataIndex: 'role',
-      render: (t, r) =>
-        r.role.map((v, k) =>
-          <span key={k} className='w-full text-center inline-block mt-1 px-5 py-1 text-white transition-colors duration-150 bg-stone-600 rounded-lg'>
-            {v}
-          </span>
-        )
+      dataIndex: 'roles',
+      // render: (t, r) => 
+      //   r.roles.map((v, k) =>
+      //     // <span key={k} className='w-full text-center inline-block mt-1 px-5 py-1 text-white transition-colors duration-150 bg-stone-600 rounded-lg'>
+      //       {k}
+      //     // </span>
+      //   )
     },
     {
       title: 'Assign',
@@ -126,74 +151,33 @@ export default function Index() {
     }
   ].filter(item => !item.hidden);
 
-  const data = [
-    {
-      id: 1,
-      name: "Luca Doncic",
-      photo: "https://cdn-icons-png.flaticon.com/512/847/847975.png",
-      username: "luca_magic",
-      email: "luca_don@email.com",
-      phone: "081234567895",
-      address: "Jl. Kebon Jeruk No.1",
-      gender: "Male",
-      role: ["Employee", "Manager"],
-      action: '',
-      key: 1,
-    },
-    {
-      id: 2,
-      name: "Alex Caruso",
-      photo: "https://cdn-icons-png.flaticon.com/512/847/847975.png",
-      username: "alex_carushow",
-      email: "acfresh21@email.com",
-      phone: "081234567895",
-      address: "Jl. Kebon Pisang No.1",
-      gender: "Male",
-      role: ["Cashier"],
-      action: '',
-      key: 2,
-    },
-    {
-      id: 3,
-      name: "Derrick Rose",
-      photo: "https://cdn-icons-png.flaticon.com/512/847/847975.png",
-      username: "drose",
-      email: "drose@email.com",
-      phone: "081234567895",
-      address: "Jl. Kebon Kacang No.1",
-      gender: "Female",
-      role: ["Owner"],
-      action: '',
-      key: 3,
-    },
-  ];
-
   function onChange(pagination, filters, sorter, extra) {
-    console.log('params', pagination, filters, sorter, extra);
-    console.log(sorter.field);
-    console.log(sorter.order);
+    // console.log('params', pagination, filters, sorter, extra);
+    // console.log(sorter.field);
+    // console.log(sorter.order);
     let filteredData = userData;
-    // sort filterdata by sorter.field asc
-    if (sorter.field) {
-      filteredData = filteredData.sort((a, b) => {
-        if (sorter.order === 'ascend') {
-          return a[sorter.field] - b[sorter.field];
-        } else {
-          return b[sorter.field] - a[sorter.field];
-        }
+    
+    filteredData = filteredData.sort((a, b) => {
+      let field = (sorter.field) ? sorter.field : 'name';
+      if (sorter.order === 'ascend' || sorter.order === undefined) {
+        return a[field].localeCompare(b[field]);
+      } else {
+        return b[field].localeCompare(a[field]);
       }
-      );
-    }
+    });
+
     const numberedFilteredData = filteredData.map((item, index) => ({
       ...item,
       numrow: index + 1,
     }));
+
+    // console.log(filteredData);
     setUserData(numberedFilteredData);
   }
 
   const filterData = (e) => {
     const search = e.target.value;
-    const filteredData = data.filter(
+    const filteredData = initialData.filter(
       item =>
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.username.toLowerCase().includes(search.toLowerCase())

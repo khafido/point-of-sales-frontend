@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Row, Col, Space, message, DatePicker, Select } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Form, Input, Row, Col, Space, message, DatePicker, Select, Upload } from 'antd';
 import Button from 'antd-button-color';
 import moment from 'moment';
 import axios from 'axios';
-
+import { UploadOutlined } from '@ant-design/icons';
+import FormItem from 'antd/lib/form/FormItem';
+import TextArea from 'antd/lib/input/TextArea';
 export default function UserForm() {
-    const [existUsername, setExistUsername] = useState();
-    const [existEmail, setExistEmail] = useState();
 
     useEffect(() => {
-        axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/all-username')
-            .then(res => {
-                setExistUsername(res.data);
-            })
-            .catch(err => {
-                console.log(err);
-            })
         
-            axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/all-email')
-            .then(res => {
-                setExistEmail(res.data);
-            })
-            .catch(err => {
-                console.log(err);
-            })
     }, []);
+
+    const checkUsernameIsExist = async (username) => {
+        return await axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/check-username/' + username + "/")
+            .then(res => { return res.data })
+            .catch(err => { return err });
+    }
+
+    const checkEmailIsExist = async (email) => {
+        return await axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/check-email/' + email + "/")
+            .then(res => { return res.data })
+            .catch(err => { return err });
+    }
 
     const formRule = {
         firstName: [
@@ -49,8 +47,12 @@ export default function UserForm() {
                 min: 6,
             },
             {
-                validator: (rule, value) => {
-                    if (existUsername.includes(value)) {
+                validator: async (rule, value) => {
+                    let status = await checkUsernameIsExist(value).then(res => {
+                        return res;
+                    });
+                    console.log('username', status);
+                    if (status && value.length > 6) {
                         return Promise.reject('Username already exist');
                     }
                     return Promise.resolve();
@@ -67,8 +69,12 @@ export default function UserForm() {
                 message: 'Please input valid email',
             },
             {
-                validator: (rule, value) => {
-                    if (existEmail.includes(value)) {
+                validator: async (rule, value) => {
+                    let status = await checkEmailIsExist(value).then(res => {
+                        return res;
+                    });
+                    console.log('email', status);
+                    if (status && value.length > 6) {
                         return Promise.reject('Email already exist');
                     }
                     return Promise.resolve();
@@ -102,22 +108,39 @@ export default function UserForm() {
                 required: true,
                 message: 'Please select your gender'
             }
+        ],
+        address: [
+            {
+                required: true,
+                message: 'Please input your address'
+            }
         ]
-    };
-
-    const submitForm = async () => {
-        try {
-            const values = await form.validateFields();
-            message.success('Success:', values);
-        } catch (errorInfo) {
-            message.error('Failed:', errorInfo);
-        }
     };
 
     const [form] = Form.useForm();
 
     const onFinish = (e) => {
-        console.log('Submit success!', e);
+        // console.log('Submit success!', e);
+        let req = {
+            firstName: e.firstName,
+            lastName: e.lastName,
+            username: e.username,
+            email: e.email,
+            gender: e.gender,
+            password: e.password,
+            birthDate: e.birthDate,
+            phone: e.phone,
+            address: e.address,
+            photo: e.photo.file.thumbUrl,
+        }
+        // console.log(req);
+        axios.post(process.env.NEXT_PUBLIC_API_URL + 'v1/user/', req)
+            .then(res => {
+                console.log(res.data);
+                message.success('Success Create User');
+            }).catch(err => {
+                message.error('Failed:', err.message);
+            });
     };
 
     const onFinishFailed = () => {
@@ -173,11 +196,10 @@ export default function UserForm() {
                         </Form.Item>
                     </Col>
                 </Row>
-
                 <Row>
                     <Col>
                         <Form.Item
-                            name="birthdate"
+                            name="birthDate"
                             label="Birth Date"
                             rules={formRule.birthdate}
                         >
@@ -188,7 +210,7 @@ export default function UserForm() {
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={9} className='ml-4'>
+                    <Col span={8} className='ml-4'>
                         <Form.Item
                             name="phone"
                             label="Phone"
@@ -210,9 +232,35 @@ export default function UserForm() {
                         </Form.Item>
                     </Col>
                 </Row>
+                <Row>
+                    <Col span={12}>
+                        <Form.Item rules={formRule.address} name="address" label="Address">
+                            <TextArea rows={3} placeholder="Address" />
+                        </Form.Item>
+                    </Col>
+
+                </Row>
+                <Row>
+                    <Col>
+                        <Form.Item
+                            name="photo"
+                            label="Photo"
+                            rules={formRule.photo}
+                        >
+
+                            <Upload
+                                accept="image/png, image/jpeg"
+                                listType="picture"
+                                maxCount={1}
+                            >
+                                <Button>{<UploadOutlined />}Upload Photo</Button>
+                            </Upload>
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Form.Item className='mt-2'>
-                    <Button className='w-[100px]' style={{color:'white', backgroundColor:'rgb(22 163 74)'}} htmlType="submit">
+                    <Button className='w-[100px]' style={{ color: 'white', backgroundColor: 'rgb(22 163 74)' }} htmlType="submit">
                         Submit
                     </Button>
 
