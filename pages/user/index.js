@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Image, Table } from 'antd';
+import { Image, Modal, Table } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined, WarningFilled } from '@ant-design/icons';
 import axios from 'axios';
+import Button from 'antd-button-color';
 
 export default function Index() {
   const [userData, setUserData] = useState([]);
@@ -12,6 +13,10 @@ export default function Index() {
   const [order, setOrder] = useState({});
 
   useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
     axios.get(process.env.NEXT_PUBLIC_API_URL+'v1/user/').then((res) => {
       let users = res.data.map((item, key) => {
         item.key = item.id;
@@ -26,20 +31,19 @@ export default function Index() {
         return item;
       });
 
+      // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
+
+      // const numberedData = sortedData.map((item, index) => ({
+      //   ...item,
+      //   numrow: index + 1,
+      // }));
+      
       setInitialData(users);
       setUserData(users);
     }).catch((err) => {
       console.log(err);
     });
-
-    const sortedData = userData.sort((a, b) => a.name.localeCompare(b.name));
-
-    const numberedData = sortedData.map((item, index) => ({
-      ...item,
-      numrow: index + 1,
-    }));
-    setUserData(numberedData);
-  }, []);
+  }
 
   const columns = [
     {
@@ -140,7 +144,7 @@ export default function Index() {
             </a>
           </Link>
 
-          <a onClick={() => deleteUser(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
+          <a onClick={() => deleteUserModal(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
             <DeleteOutlined /> Delete
           </a>
 
@@ -180,7 +184,8 @@ export default function Index() {
     const filteredData = initialData.filter(
       item =>
         item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.username.toLowerCase().includes(search.toLowerCase())
+        item.username.toLowerCase().includes(search.toLowerCase()) ||
+        item.email.toLowerCase().includes(search.toLowerCase())
     );
     const numberedFilteredData = filteredData.map((item, index) => ({
       ...item,
@@ -193,8 +198,33 @@ export default function Index() {
     alert(`Assign Owner to ${id}`);
   }
 
+  const { confirm } = Modal;
+
+  const deleteUserModal = (id) => {
+    confirm({
+      title: 'Are you sure delete this task?',
+      icon: <ExclamationCircleOutlined />,
+      content: '',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        deleteUser(id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  }
+
   const deleteUser = (id) => {
-    alert("delete/" + id);
+    axios.patch(`${process.env.NEXT_PUBLIC_API_URL}v1/user/${id}`)
+      .then(res => {
+        loadData();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   return (
@@ -212,7 +242,6 @@ export default function Index() {
       <br />
       <br />
       <Table className='' columns={columns} dataSource={userData} onChange={onChange} scroll={{ x: 1300 }} />
-
     </Layout>
   )
 }
