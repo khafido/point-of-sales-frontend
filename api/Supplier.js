@@ -52,14 +52,14 @@ export async function deleteSupplier(id) {
         .catch(err => console.log(err))
 }
 
-export async function updateSupplier(id, {name, email, phone, address, CPName}) {
+export async function updateSupplier(id, {name, email, phone, address, cpname}) {
     return apiClient
         .put(`${url}/${id}`, {
             name,
             email,
             phone,
             address,
-            CPName
+            cpname
         })
         .then(response=> {
             if(response) {        
