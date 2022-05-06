@@ -160,6 +160,7 @@ export default function Index() {
                 description: result.message
               })
             }
+            form.resetFields()
             loadTableData()
         })
         break

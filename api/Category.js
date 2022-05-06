@@ -57,3 +57,12 @@ export async function deleteCategory(id){
         })
         .catch(err => console.log(err))
 }
+
+export async function checkCategoryExist(category){
+    return apiClient
+        .get(`${url}'/check-category'/${category}`)
+        .then(response => {
+            return response.data
+        })
+        .catch(err => console.log(err))
+}

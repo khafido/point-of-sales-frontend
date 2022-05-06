@@ -2,38 +2,71 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 import Link from 'next/link';
 import Search from 'antd/lib/input/Search';
-import { Button,Col,Row, Form,Input,Modal, notification, Table } from 'antd';
+import { Button,Col,Row, Form,Input,Modal, notification, Table, message, Space } from 'antd';
 import * as category from 'api/Category';
 
 
 export default function Index() {
+  const [form] = Form.useForm()
+
   // state for modal
   const [visible, setVisible] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [tableLoading, setTableLoading] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState((<div></div>));
   const [formData, setFormData] = useState({});
+
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [submitParam, setSubmitParam] = useState({type: '', id: ''})
+
+  const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
+  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
+  const [tableTotalPages, setTableTotalPages] = useState(0)
+
 
   // testing filter 
-  const [categoryData, setCategoryData] = useState();
-  useEffect(() => {
-    category.listCategory(false, 0, 10, "","name","asc")
-    .then(response => {
-      setCategoryData(response.result.currentPageContent)
+  const onSearchData = (value , e)=> {
+    setSearchLoading(true)
+    setSearchVal(value)
+    setTablePagination({
+      page: 1,
+      pageSize: 10
     })
-  },[])
+  }
 
-  const showModal = (type) => {
+  const formRule = {
+    name:[
+      {
+        required: true,
+        message: 'Please input category',
+      },
+      {
+        validator: async (rule, value) => {
+          let status = await category.checkCategoryExist(value).then(res => {
+              return res;
+          });
+          console.log('category', status);
+          if (status && value.length > 6) {
+              return Promise.reject('Category already exist');
+          }
+          return Promise.resolve();
+        }
+      }
+    ]
+  }
+
+  const showModal = (type, id) => {
     setVisible(true);
+    setSubmitParam({type, id})
     switch(type){
       case 'add':
         setModalTitle('Add New Category')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} >
-              <Form.Item label='Name'name='name' hasFeedback required rules={[{required: true, message: 'Please input category name'}]} >
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+              <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255}/>
               </Form.Item>
             </Form>
@@ -41,11 +74,33 @@ export default function Index() {
         ))
         break
         case 'edit':
+          const editIndex = tableData.findIndex((element)=> element.id === id)
+          const editData = tableData[editIndex]
+          form.setFieldsValue({
+            id,
+            name: editData.name,
+          })
           setModalTitle('Edit Category')
+          setModalBody((
+            <div>
+              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+                <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
+                  <Input maxLength={255}/>
+                </Form.Item>
+              </Form>
+            </div>
+          ))
           break
         case 'delete':
-          setModalTitle('Delete Category')
-          break
+          const deleteIndex = tableData.findIndex((element)=> element.id === id)
+        const deleteData = tableData[deleteIndex]
+        
+        setModalTitle('Delete Category')
+        setModalBody((
+          `Are you sure want to delete category ${deleteData.name}?`
+        ))
+
+        break
     }
   };
 
@@ -62,23 +117,73 @@ export default function Index() {
     setFormData(data)
   }
 
-
+  // TODO clear form field after submitting
   const handleOk = () => {
     setConfirmLoading(true);
-    category.addCategory({
-      name:formData.name.value
-    }).then(response=> {
-      setTimeout(() => {
-          notification.success({
-            message: response.message,
-            description: JSON.stringify(response.result)
-          })  
-      }, 1000)
-    })
-    setTimeout(() => {
-      setVisible(false);
-      setConfirmLoading(false);
-    }, 1000)
+    switch(submitParam.type){
+      case 'add':
+        category.addCategory({
+          name:formData.name.value
+        })
+        .then(result=> {
+          setVisible(false);
+          setConfirmLoading(false);
+          if(result.status === 'CREATED') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
+      })
+      break
+      case 'edit':
+        category.updateCategory(submitParam.id,{
+          name:formData.name.value
+        })
+        .then(result=> {
+          setVisible(false);
+          setConfirmLoading(false);
+          if(result.status === 'SUCCESS') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
+      })
+      break
+      case 'delete':
+        category.deleteCategory(submitParam.id)
+        .then(result=> {
+          setVisible(false);
+          setConfirmLoading(false);
+          if(result.status === 'SUCCESS') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
+      })
+      break
+    }
+    
   };
 
   const validateForm = ()=> {
@@ -100,20 +205,30 @@ export default function Index() {
     setVisible(false);
   }
 
-  useEffect(() => {
-    setTableLoading(true)
-    category.listCategory(true, 0, 10,"","name","asc")
-      .then(response=> {
-        const sortedData = response.result.currentPageContent.sort((a, b) => a.name.localeCompare(b.name));
-        const numberedData = sortedData.map((item, index) => ({
-          ...item,
-          numrow: index + 1,
-        }));
-        setTableData(numberedData)
-        setTableLoading(false)
+  const loadTableData = (
+    searchBy = searchVal,
+    page = tablePagination.page-1, 
+    pageSize = tablePagination.pageSize,) => {
+      setTableLoading(true)
+      category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
+      .then(result=> {
+        if(result.result) {
+          setTableData(result.result.currentPageContent)
+          setTableTotalPages(result.result.totalPages)
+          setTableLoading(false)
+        } else {
+          notification.error({
+            message: result.message? result.message : 'Error loading category data',
+            duration: 0
+          })
+        }
       })
-    console.log(tableData)
-  }, [visible]);
+    }
+
+  useEffect(() => {
+    loadTableData()
+    setSearchLoading(false)
+  }, [tablePagination]);
 
   const columns = [
     {
@@ -135,52 +250,20 @@ export default function Index() {
       title: 'Action',
       dataIndex: 'action',
       key: 'action',
-      render: (t, r) => 
-        <div className='place-content-center'>
-          <Link href={'/user/detail/'+r.id}>
-              <a className="float-left text-center px-4 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">            
-               Edit
-              </a>
-          </Link>
-
-          <a onClick={() => deleteUser(r.id)} className="float-right text-center inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-           Delete
-          </a>
-        </div>
+      render: (t, r) => (
+        <Space size="middle">
+          <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
+          <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
+        </Space>
+      )
     }
   ].filter(item => !item.hidden);
 
-  
-  function onChange(pagination, filters, sorter, extra) {
-    console.log('params', pagination, filters, sorter, extra);
-    let filteredData = tableData;
-    // sort filterdata by sorter.field asc
-    if (sorter.field) {
-      filteredData = filteredData.sort((a, b) => {
-        if (sorter.order === 'ascend') {
-          return a[sorter.field] - b[sorter.field];
-        } else {
-          return b[sorter.field] - a[sorter.field];
-        }
-      }
-      );
-    }
-    const numberedFilteredData = filteredData.map((item) => ({
-      ...item
-    }));
-    setTableData(numberedFilteredData);
-  }
-
-  const filterData = (e) => {
-    const search = e.target.value;
-    const filteredData = categoryData.filter(
-      item => 
-        item.name.toLowerCase().includes(search.toLowerCase()) 
-      );
-    const numberedFilteredData = filteredData.map((item) => ({
-      ...item
-    }));
-    setTableData(numberedFilteredData);
+  const onChangePagination = (page, pageSize)=> {
+    setTablePagination({
+      page, 
+      pageSize
+    })
   }
 
   const deleteUser = (id) => {
@@ -192,7 +275,7 @@ export default function Index() {
     <Layout title="Category" subtitle="">
       <Row>
         <Col span={6}>
-        <Search onChange={filterData} />
+        <Search onChange={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
           <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Category</Button>
@@ -202,8 +285,14 @@ export default function Index() {
       <Table  
       columns={columns} 
       dataSource={tableData} 
-      onChange={onChange}
-      loading={tableLoading}  />
+      loading={tableLoading}
+      pagination={{
+        onChange: onChangePagination,
+        total: tableTotalPages * tablePagination.pageSize,
+        pageSize: tablePagination.pageSize,
+        showSizeChanger: true
+      }}
+      />
         <Modal
           title={modalTitle}
           visible={visible}
