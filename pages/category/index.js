@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Search from 'antd/lib/input/Search';
 import { Button,Col,Row, Form,Input,Modal, notification, Table, message, Space } from 'antd';
 import * as category from 'api/Category';
+import { duration } from 'moment';
 
 
 export default function Index() {
@@ -14,11 +15,12 @@ export default function Index() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState((<div></div>));
   const [formData, setFormData] = useState({});
+  const [submitParam, setSubmitParam] = useState({type: '', id: ''})
 
   const [searchLoading, setSearchLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-  const [submitParam, setSubmitParam] = useState({type: '', id: ''})
+ 
 
   const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
@@ -133,14 +135,14 @@ export default function Index() {
               message: result.message,
               duration: 3
             })
-          } else {
-            notification.error({
-              message: result.status,
-              description: result.message
-            })
-          }
+          } 
+          form.resetFields()
           loadTableData()
-      })
+        })
+        .catch(err => {
+          console.log(err)
+          message.error(err.message)
+        })
       break
       case 'edit':
         category.updateCategory(submitParam.id,{
@@ -154,13 +156,12 @@ export default function Index() {
               message: result.message,
               duration: 3
             })
-          } else {
-            notification.error({
-              message: result.status,
-              description: result.message
-            })
-          }
+          } 
           loadTableData()
+      })
+      .catch(err => {
+        console.log(err)
+        message.error(err.message)
       })
       break
       case 'delete':
@@ -202,6 +203,7 @@ export default function Index() {
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
+    form.resetFields()
     setVisible(false);
   }
 

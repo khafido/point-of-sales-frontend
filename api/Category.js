@@ -60,7 +60,7 @@ export async function deleteCategory(id){
 
 export async function checkCategoryExist(category){
     return apiClient
-        .get(`${url}'/check-category'/${category}`)
+        .get(`${url}/check-category/${category}`)
         .then(response => {
             return response.data
         })
