@@ -2,13 +2,16 @@ import apiClient from "api";
 
 const url = '/category'
 
-export async function listCategory(active, page, size){
+export async function listCategory(isPaginated, page, size, searchValue, sortBy, sortDir){
     return apiClient
         .get(url, {
             params: {
-                active,
+                isPaginated,
                 page,
-                size
+                size,
+                searchValue,
+                sortBy,
+                sortDir
         }})
         .then(response => {
             if(response){
@@ -43,7 +46,7 @@ export async function updateCategory(id, {name}){
         .catch(err => console.log(err))
 }
 
-export async function deleteCategor(id){
+export async function deleteCategory(id){
     return apiClient
         .patch(`${url}/${id}`)
         .then(response => {

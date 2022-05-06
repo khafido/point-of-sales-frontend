@@ -19,7 +19,7 @@ export default function Index() {
   // testing filter 
   const [categoryData, setCategoryData] = useState();
   useEffect(() => {
-    category.listCategory(true,0,10)
+    category.listCategory(false, 0, 10, "","name","asc")
     .then(response => {
       setCategoryData(response.result.currentPageContent)
     })
@@ -102,7 +102,7 @@ export default function Index() {
 
   useEffect(() => {
     setTableLoading(true)
-    category.listCategory(true, 0, 10)
+    category.listCategory(true, 0, 10,"","name","asc")
       .then(response=> {
         const sortedData = response.result.currentPageContent.sort((a, b) => a.name.localeCompare(b.name));
         const numberedData = sortedData.map((item, index) => ({
@@ -213,11 +213,6 @@ export default function Index() {
         >
        {modalBody}
         </Modal>
-  
-      
-
-     
-   
     </Layout>
   )
 }
