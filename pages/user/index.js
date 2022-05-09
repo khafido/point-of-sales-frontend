@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Image, Modal, Table } from 'antd';
+import { Divider, Image, Modal, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
 import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined, WarningFilled } from '@ant-design/icons';
@@ -25,9 +25,9 @@ export default function Index() {
         if (!item.photo) {
           item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
         }
-        item.roles = item.roles.map((role) => {
-          return role.name.replace('ROLE_', '');
-        }).join(', ');
+        // item.roles = item.roles.map((role) => {
+        //   return role.name.replace('ROLE_', '');
+        // }).join(', ');
         return item;
       });
 
@@ -111,12 +111,12 @@ export default function Index() {
       key: 'roles',
       width: 150,
       dataIndex: 'roles',
-      // render: (t, r) => 
-      //   r.roles.map((v, k) =>
-      //     // <span key={k} className='w-full text-center inline-block mt-1 px-5 py-1 text-white transition-colors duration-150 bg-stone-600 rounded-lg'>
-      //       {k}
-      //     // </span>
-      //   )
+      render: (t, r) => 
+        r.roles.map((v, k) =>
+          <div>
+            <Tag key={k} color="purple">{v.name.replace('ROLE_', '')}</Tag>
+          </div>
+        )
     },
     {
       title: 'Assign',
