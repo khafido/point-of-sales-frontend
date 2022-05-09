@@ -21,3 +21,15 @@ export async function getAll(
 		},
 	})
 }
+
+export async function create(storeData) {
+	return apiClient.post(url, storeData)
+}
+
+export async function update(id, storeData) {
+	return apiClient.put(`${url}/${id}`, storeData)
+}
+
+export async function remove(id) {
+	return apiClient.delete(`${url}/${id}`)
+}

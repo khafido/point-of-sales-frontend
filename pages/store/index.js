@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getAll } from 'api/Store'
+import { create, getAll, remove, update } from 'api/Store'
 import {
 	Form,
 	Input,
@@ -13,8 +13,10 @@ import {
 	Table,
 	Divider,
 	message,
+	Popconfirm,
 } from 'antd'
 import Layout from '@components/Layout'
+import { DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 const { Search } = Input
 const rules = {
 	name: [
@@ -34,14 +36,66 @@ const rules = {
 export default function Index() {
 	const [mode, setMode] = useState('Create')
 	const [visible, setVisible] = useState(false)
+	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
 	const [currPage, setCurrPage] = useState(0)
 	const [totalPage, setTotalPage] = useState(1)
 	const [loading, setLoading] = useState(true)
 	const [form] = Form.useForm()
 
-	const onCreate = (value) => {
+	useEffect(() => {
+		fetchStore()
+	}, [])
+
+	const fetchStore = () => {
+		getAll()
+			.then((res) => {
+				if (res) {
+					const stores = res.data.result.currentPageContent.map((val) => {
+						return { ...val, key: val.id }
+					})
+					setStoreData(stores)
+					setCurrPage(res.data.result.currentPage)
+					setTotalPage(res.totalPage)
+				}
+			})
+			.catch((err) => {
+				if (err) {
+					message.error(err.response.data.message)
+				}
+			})
+	}
+
+	const onSave = (value) => {
+		if (mode == 'Create') {
+			create(value)
+				.then((res) => {
+					if (res) {
+						message.success(res.data.message)
+						fetchStore()
+					}
+				})
+				.catch((err) => {
+					if (err) {
+						message.error(err.response.data.message)
+					}
+				})
+		} else {
+			update(storeId, value)
+				.then((res) => {
+					if (res) {
+						message.success(res.data.message)
+						fetchStore()
+					}
+				})
+				.catch((err) => {
+					if (err) {
+						message.error(err.response.data.message)
+					}
+				})
+		}
 		console.log('Received values of form: ', value)
+		setStoreId(null)
 		setVisible(false)
 	}
 
@@ -53,12 +107,34 @@ export default function Index() {
 		setVisible(false)
 	}
 
+	const onEdit = (store) => {
+		setMode('Edit')
+		form.setFieldsValue({ name: store.name, location: store.location })
+		setStoreId(store.id)
+		setVisible(true)
+	}
+
+	const onDelete = (id) => {
+		remove(id)
+			.then((res) => {
+				if (res) {
+					message.success(res.data.message)
+					fetchStore()
+				}
+			})
+			.catch((err) => {
+				if (err) {
+					message.error(err.response.data.message)
+				}
+			})
+	}
+
 	const StoreForm = () => {
 		return (
 			<Modal
 				visible={visible}
-				title="Create a new store"
-				okText="Create"
+				title={`${mode} Store`}
+				okText="Save"
 				cancelText="Cancel"
 				onCancel={() => {
 					form.resetFields()
@@ -69,7 +145,7 @@ export default function Index() {
 						.validateFields()
 						.then((values) => {
 							form.resetFields()
-							onCreate(values)
+							onSave(values)
 						})
 						.catch((info) => {
 							console.log('Validate Failed:', info)
@@ -105,42 +181,47 @@ export default function Index() {
 			title: 'Store Name',
 			dataIndex: 'name',
 			key: 'name',
+			sorter: true,
 		},
 		{
 			title: 'Location',
 			dataIndex: 'location',
 			key: 'location',
+			sorter: true,
 		},
 		{
 			title: 'Action',
 			key: 'action',
+			width: '20%',
 			render: (text, record) => (
-				<Space size="middle">
-					<a>Invite {record.name}</a>
-					<a>Delete</a>
+				<Space split={<Divider type="vertical" />}>
+					<Button icon={<UserOutlined />} size="large"></Button>
+					<Button
+						icon={<EditOutlined />}
+						size="large"
+						onClick={(e) => {
+							onEdit(record)
+						}}
+					></Button>
+					<Popconfirm
+						title={`Confirm to delete ${record.name}`}
+						onConfirm={(e) => {
+							onDelete(record.id)
+						}}
+						okText="Yes"
+						okButtonProps={{ danger: true }}
+						cancelText="No"
+					>
+						<Button
+							icon={<DeleteOutlined />}
+							danger
+							size="large"
+						></Button>
+					</Popconfirm>
 				</Space>
 			),
 		},
 	]
-
-	useEffect(() => {
-		getAll()
-			.then((res) => {
-				if (res) {
-					const stores = res.data.result.currentPageContent.map((val) => {
-						return { ...val, key: val.id }
-					})
-					setStoreData(stores)
-					setCurrPage(res.data.result.currentPage)
-					setTotalPage(res.totalPage)
-				}
-			})
-			.catch((err) => {
-				if (err) {
-					message.error(JSON.stringify(err.response.data))
-				}
-			})
-	}, [])
 
 	return (
 		<Layout title="Store" subtitle="">
@@ -149,6 +230,7 @@ export default function Index() {
 					<Button
 						type="primary"
 						onClick={() => {
+							setMode('Create')
 							setVisible(true)
 						}}
 					>
@@ -171,7 +253,7 @@ export default function Index() {
 			/>
 			<StoreForm
 				visible={visible}
-				onCreate={onCreate}
+				onCreate={onSave}
 				onCancel={() => {
 					setVisible(false)
 				}}
