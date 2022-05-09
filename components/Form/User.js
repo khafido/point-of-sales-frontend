@@ -3,17 +3,16 @@ import { useRouter } from "next/router";
 import { Form, Input, Row, Col, Space, message, DatePicker, Select, Upload } from 'antd';
 import Button from 'antd-button-color';
 import moment from 'moment';
-import axios from 'axios';
 import { UploadOutlined } from '@ant-design/icons';
-import FormItem from 'antd/lib/form/FormItem';
 import TextArea from 'antd/lib/input/TextArea';
+import * as user from 'api/User'
 
 export default function UserForm({ action, userData, userId }) {
     const router = useRouter();
     const [form] = Form.useForm();
 
     useEffect(() => {
-        if (action === 'edit') {
+        if (action === 'Edit') {
             if (userData !== undefined) {
                 form.setFieldsValue({
                     firstName: userData.firstName,
@@ -30,14 +29,18 @@ export default function UserForm({ action, userData, userId }) {
     }, [userData]);
 
     const checkUsernameIsExist = async (username) => {
-        return await axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/check-username/' + username + "/")
-            .then(res => { return res.data })
+        return user.checkUsernameIsExist(username)
+            .then(res => { 
+                return res.data; 
+            })
             .catch(err => { return err });
     }
 
     const checkEmailIsExist = async (email) => {
-        return await axios.get(process.env.NEXT_PUBLIC_API_URL + 'v1/user/check-email/' + email + "/")
-            .then(res => { return res.data })
+        return user.checkEmailIsExist(email)
+            .then(res => { 
+                return res.data; 
+            })
             .catch(err => { return err });
     }
 
@@ -144,7 +147,7 @@ export default function UserForm({ action, userData, userId }) {
             address: e.address,
         }
 
-        if (action == 'create') {
+        if (action == 'Add') {
             req.username = e.username;
             req.email = e.email;
         }
@@ -155,22 +158,23 @@ export default function UserForm({ action, userData, userId }) {
             req.photo = null;
         }
 
-        // console.log(req);
-        if (action === 'create' || action === undefined) {
-            axios.post(process.env.NEXT_PUBLIC_API_URL + 'v1/user/', req)
-                .then(res => {
-                    console.log(res.data);
-                    message.success('Success Create User');
-                }).catch(err => {
-                    message.error('Failed:', err.message);
-                }).finally(() => {
-                    form.resetFields();
-                    router.push('/user');
-                });
+        if (action === 'Add' || action === undefined) {
             console.log('create');
-        } else if (action === 'edit') {
-            axios.put(process.env.NEXT_PUBLIC_API_URL + 'v1/user/' + userId, req)
-                .then(res => {
+            console.log('create');
+            user.addUser(req).then(res => {
+                console.log(res.data);
+                message.success('Success Create User');
+            }).catch(err => {
+                message.error('Failed:', err.message);
+            }).finally(() => {
+                form.resetFields();
+                router.push('/user');
+            });
+        } else if (action === 'Edit') {
+            console.log('edit');
+            user.editUser(userId, req)
+            .then(res => {
+                    console.log(res.data);
                     message.success('Success Update User');
                 }).catch(err => {
                     message.error('Failed:', err.message);
@@ -192,7 +196,7 @@ export default function UserForm({ action, userData, userId }) {
                     form={form}
                     layout="vertical"
                     onFinish={onFinish}
-                    // onFinishFailed={onFinishFailed}
+                    onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
                     <Row>
@@ -200,18 +204,18 @@ export default function UserForm({ action, userData, userId }) {
                             <Form.Item
                                 name="username"
                                 label="Username"
-                                rules={(action=='create')?formRule.username:[]}
+                                rules={(action=='Add')?formRule.username:[]}
                             >
-                                <Input disabled={(action=='create')?false:true} placeholder="Username" />
+                                <Input disabled={(action=='Add')?false:true} placeholder="Username" />
                             </Form.Item>
                         </Col>
                         <Col span={11} className='ml-4'>
                             <Form.Item
                                 name="email"
                                 label="Email"
-                                rules={(action=='create')?formRule.email:[]}
+                                rules={(action=='Add')?formRule.email:[]}
                             >
-                                <Input disabled={(action=='create')?false:true} placeholder="Email" />
+                                <Input disabled={(action=='Add')?false:true} placeholder="Email" />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -265,8 +269,8 @@ export default function UserForm({ action, userData, userId }) {
                                 rules={formRule.gender}
                             >
                                 <Select placeholder="Select Gender">
-                                    <Select.Option value="male">Male</Select.Option>
-                                    <Select.Option value="female">Female</Select.Option>
+                                    <Select.Option value="Male">Male</Select.Option>
+                                    <Select.Option value="Female">Female</Select.Option>
                                 </Select>
                             </Form.Item>
                         </Col>
@@ -300,12 +304,16 @@ export default function UserForm({ action, userData, userId }) {
 
                     <Form.Item className='mt-2'>
                         <Button className='w-[100px]' style={{ color: 'white', backgroundColor: 'rgb(22 163 74)' }} htmlType="submit">
-                            Submit
+                            {action}
                         </Button>
-                        {(action=='create')?
+                        {(action=='Add')?
                         <Button className='ml-3 mt-3' type='danger' onClick={() => form.resetFields()}>
                             Clear
-                        </Button>:''}
+                        </Button>:
+                        <Button className='ml-3 mt-3' onClick={() => router.push("/user")}>
+                            Back
+                        </Button>
+                        }
                         
                     </Form.Item>
                 </Form>
