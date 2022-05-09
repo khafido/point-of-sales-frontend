@@ -5,7 +5,7 @@ import UserForm from '@components/Form/User';
 export default function Index() {
   return (
     <Layout title="User Form" subtitle="">
-      <UserForm />
+      <UserForm action="Add" />
     </Layout>
   )
 }
