@@ -111,6 +111,7 @@ export default function Index() {
       title: 'Photo',
       key: 'photo',
       dataIndex: 'photo',
+      width: 100,
       render: (t, r) => <Image key={r.id} width={40} preview={false} src={`${r.photo}`} alt="photo" />,
     },
     {
@@ -182,7 +183,7 @@ export default function Index() {
             </a>
           </Link>
 
-          <a onClick={() => deleteUserModal(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
+          <a onClick={() => deleteUserModal(r.id, r.name)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
             <DeleteOutlined /> Delete
           </a>
 
@@ -224,9 +225,9 @@ export default function Index() {
 
   const { confirm } = Modal;
 
-  const deleteUserModal = (id) => {
+  const deleteUserModal = (id, name) => {
     confirm({
-      title: 'Are you sure delete this task?',
+      title: `Are you sure want to delete ${name}?`,
       icon: <ExclamationCircleOutlined />,
       content: '',
       okText: 'Yes',
