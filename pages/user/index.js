@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 import { Divider, Image, Modal, notification, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import * as user from 'api/User'
 
 export default function Index() {
@@ -34,7 +34,7 @@ export default function Index() {
 
     user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
     .then(result=> {
-      // console.log('result', result);
+      //console.log('result', result);
 
       if(result.result) {
         let users = result.result.currentPageContent.map((item, key) => {
@@ -190,9 +190,9 @@ export default function Index() {
             <TrophyOutlined /> Assign Owner
           </a>
 
-          {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
-            <UsergroupAddOutlined /> Assign Manager
-          </a> */}
+          <a key={r.id} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
+            <UsergroupAddOutlined /> Assign Role
+          </a>
         </div>
     }
   ].filter(item => !item.hidden);

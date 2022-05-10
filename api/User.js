@@ -134,3 +134,37 @@ export async function checkEmailIsExist(email) {
         }
         ).catch(err => console.log(err))
 }
+
+export async function addRole(id, roleName){
+    return apiClient
+        .patch(`${url}/${id}/add-roles`, req, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        })
+        .then(response => {
+            return response.data;
+        })
+        .catch(err => console.log(err))
+}
+
+export async function removeRole(id, roleName){
+    return apiClient
+        .patch(`${url}/${id}/remove-roles`, req, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        })
+        .then(response => {
+            return response.data;
+        })
+        .catch(err => console.log(err))
+}

@@ -181,20 +181,6 @@ export default function Index() {
     
   };
 
-  // const validateForm = ()=> {
-  //   let filled = false
-  //   for(var key of Object.keys(formData)) {
-  //     if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
-  //       filled = true
-  //       break
-  //     }
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   validateForm()
-  // }, [formData])
-
   const handleCancel = () => {
     console.log('Clicked cancel button');
     form.resetFields()
