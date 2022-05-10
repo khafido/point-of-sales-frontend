@@ -15,6 +15,7 @@ import {
 	message,
 	Popconfirm,
 	Select,
+	Pagination,
 } from 'antd'
 import Layout from '@components/Layout'
 import {
@@ -46,30 +47,40 @@ export default function Index() {
 	const [visibleDetail, setVisibleDetail] = useState(false)
 	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
-	const [currPage, setCurrPage] = useState(0)
-	const [totalPage, setTotalPage] = useState(1)
 	const [loading, setLoading] = useState(true)
+
+	const [page, setPage] = useState(1)
+	const [pageSize, setPageSize] = useState(10)
+	const [serachValue, setSearchValue] = useState('')
+	const [sortBy, setSortBy] = useState('')
+	const [sortDir, setSortDir] = useState('')
+	const [totalPage, setTotalPage] = useState(1)
+
 	const [form] = Form.useForm()
 	const [assignForm] = Form.useForm()
 
 	useEffect(() => {
 		fetchStore()
-	}, [])
+	}, [serachValue, page])
 
 	const fetchStore = () => {
-		getAll()
+		let pg = page - 1
+		console.log('Fetching page', pg)
+		getAll(true, pg, pageSize, serachValue, sortBy, sortDir)
 			.then((res) => {
 				if (res) {
 					const stores = res.data.result.currentPageContent.map((val) => {
 						return { ...val, key: val.id }
 					})
 					setStoreData(stores)
-					setCurrPage(res.data.result.currentPage)
-					setTotalPage(res.totalPage)
+					setPage(res.data.result.currentPage + 1)
+					setTotalPage(res.data.result.totalPages * pageSize)
+					console.log('Total page fetched', res.data.result.totalPages)
 				}
 			})
 			.catch((err) => {
 				if (err) {
+					console.log(err)
 					message.error(err.response.data.message)
 				}
 			})
@@ -109,7 +120,8 @@ export default function Index() {
 	}
 
 	const onSearch = (value) => {
-		alert(value)
+		setSearchValue(value)
+		console.log(storeData)
 	}
 
 	const onCancel = () => {
@@ -145,6 +157,12 @@ export default function Index() {
 	const onShowDetailStore = (store) => {
 		setVisibleDetail(true)
 		console.log('Showing Detail Store : ', store.id)
+	}
+
+	const onSortAndPagination = (pagination, sorter) => {
+		setSortBy(sorter.columnKey)
+		setSortDir(sorter.order)
+		setPage(pagination.current)
 	}
 
 	const StoreForm = () => {
@@ -329,11 +347,7 @@ export default function Index() {
 					</Form.Item>
 				</Form>
 				<br />
-				<Table
-					columns={storeDetailColumns}
-					dataSource={null}
-					// pagination={{ current: currPage + 1, pageSize: totalPage }}
-				/>
+				<Table columns={storeDetailColumns} dataSource={null} />
 			</Modal>
 		)
 	}
@@ -355,7 +369,10 @@ export default function Index() {
 				<Col>
 					<Search
 						placeholder="Search store"
-						onSearch={onSearch}
+						// onSearch={onSearch}
+						onChange={(e) => {
+							onSearch(e.target.value)
+						}}
 						enterButton
 					/>
 				</Col>
@@ -364,7 +381,20 @@ export default function Index() {
 			<Table
 				columns={columns}
 				dataSource={storeData}
-				pagination={{ current: currPage + 1, pageSize: totalPage }}
+				pagination={{
+					defaultCurrent: 1,
+					current: page,
+					pageSize: pageSize,
+					total: totalPage,
+					onChange: (pageVal) => {
+						console.log('Total page', totalPage)
+						console.log('Current Page : ', page, 'Trget Page : ', pageVal)
+						setPage(pageVal)
+					},
+				}}
+				onChange={(pagination, filter, sorter) => {
+					onSortAndPagination(pagination, sorter)
+				}}
 			/>
 			<StoreForm
 				visible={visible}
