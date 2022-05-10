@@ -14,10 +14,17 @@ import {
 	Divider,
 	message,
 	Popconfirm,
+	Select,
 } from 'antd'
 import Layout from '@components/Layout'
-import { DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
+import {
+	DeleteOutlined,
+	EditOutlined,
+	UserAddOutlined,
+	UserOutlined,
+} from '@ant-design/icons'
 const { Search } = Input
+const { Option } = Select
 const rules = {
 	name: [
 		{
@@ -36,12 +43,14 @@ const rules = {
 export default function Index() {
 	const [mode, setMode] = useState('Create')
 	const [visible, setVisible] = useState(false)
+	const [visibleDetail, setVisibleDetail] = useState(false)
 	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
 	const [currPage, setCurrPage] = useState(0)
 	const [totalPage, setTotalPage] = useState(1)
 	const [loading, setLoading] = useState(true)
 	const [form] = Form.useForm()
+	const [assignForm] = Form.useForm()
 
 	useEffect(() => {
 		fetchStore()
@@ -129,6 +138,15 @@ export default function Index() {
 			})
 	}
 
+	const onAssignEmployee = (values) => {
+		console.log(values)
+	}
+
+	const onShowDetailStore = (store) => {
+		setVisibleDetail(true)
+		console.log('Showing Detail Store : ', store.id)
+	}
+
 	const StoreForm = () => {
 		return (
 			<Modal
@@ -195,7 +213,13 @@ export default function Index() {
 			width: '20%',
 			render: (text, record) => (
 				<Space split={<Divider type="vertical" />}>
-					<Button icon={<UserOutlined />} size="large"></Button>
+					<Button
+						icon={<UserOutlined />}
+						size="large"
+						onClick={(e) => {
+							onShowDetailStore(record)
+						}}
+					></Button>
 					<Button
 						icon={<EditOutlined />}
 						size="large"
@@ -222,6 +246,97 @@ export default function Index() {
 			),
 		},
 	]
+
+	const storeDetailColumns = [
+		{
+			title: 'Name',
+			key: 'name',
+		},
+		{
+			title: 'Role',
+			key: 'role',
+		},
+		{
+			title: 'Action',
+			key: 'action',
+		},
+	]
+
+	const DetailStore = () => {
+		return (
+			<Modal
+				visible={visibleDetail}
+				title={`Detail Store`}
+				footer={null}
+				onCancel={() => {
+					setVisibleDetail(false)
+					assignForm.resetFields()
+				}}
+				// onOk={() => {
+				// 	form
+				// 		.validateFields()
+				// 		.then((values) => {
+				// 			form.resetFields()
+				// 			onSave(values)
+				// 		})
+				// 		.catch((info) => {
+				// 			console.log('Validate Failed:', info)
+				// 		})
+				// }}
+			>
+				<Form
+					form={assignForm}
+					layout="inline"
+					name="assignManagerForm"
+					initialValues={{
+						employee: '',
+						role: '',
+					}}
+					onFinish={(value) => {
+						//handle assign store employee
+						onAssignEmployee(value)
+					}}
+				>
+					<Form.Item name="employee" rules={[{ required: true }]}>
+						<Select
+							placeholder="Select an employee"
+							showSearch
+							style={{ width: 100 }}
+						>
+							<Option value="employeeid1">Employee 1</Option>
+							<Option value="employeeid2">Employee 2</Option>
+							<Option value="employeeid3">Employee 3</Option>
+						</Select>
+					</Form.Item>
+					<Form.Item
+						name="role"
+						rules={[{ required: true }]}
+						style={{ width: 100 }}
+					>
+						<Select placeholder="Select a role">
+							<Option value="role1">Manager</Option>
+							<Option value="role2">Cashier</Option>
+							<Option value="role">Supplier</Option>
+						</Select>
+					</Form.Item>
+					<Form.Item>
+						<Button
+							type="primary"
+							htmlType="submit"
+							icon={<UserAddOutlined />}
+							style={{ width: 50 }}
+						></Button>
+					</Form.Item>
+				</Form>
+				<br />
+				<Table
+					columns={storeDetailColumns}
+					dataSource={null}
+					// pagination={{ current: currPage + 1, pageSize: totalPage }}
+				/>
+			</Modal>
+		)
+	}
 
 	return (
 		<Layout title="Store" subtitle="">
@@ -259,6 +374,7 @@ export default function Index() {
 				}}
 				mode={mode}
 			/>
+			<DetailStore />
 		</Layout>
 	)
 }
