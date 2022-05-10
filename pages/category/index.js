@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
-import { Button,Col,Row, Form,Input,Modal, notification, Table, message, Space } from 'antd';
+import { Button, Col, Row, Form, Input, Modal, notification, Table, message, Space } from 'antd';
 import * as category from 'api/Category';
 
 export default function Index() {
@@ -12,19 +12,19 @@ export default function Index() {
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState((<div></div>));
   const [formData, setFormData] = useState({});
-  const [submitParam, setSubmitParam] = useState({type: '', id: ''})
+  const [submitParam, setSubmitParam] = useState({ type: '', id: '' })
 
   const [searchLoading, setSearchLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-  
+
   // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
-  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
+  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 })
   const [tableTotalPages, setTableTotalPages] = useState(0)
 
-  const onSearchData = (value , e)=> {
+  const onSearchData = (value, e) => {
     setSearchLoading(true)
     setSearchVal(value)
     setTablePagination({
@@ -34,7 +34,7 @@ export default function Index() {
   }
 
   const formRule = {
-    name:[
+    name: [
       {
         required: true,
         message: 'Please input category',
@@ -42,11 +42,11 @@ export default function Index() {
       {
         validator: async (rule, value) => {
           let status = await category.checkCategoryExist(value).then(res => {
-              return res;
+            return res;
           });
           console.log('category', status);
           if (status && value.length > 6) {
-              return Promise.reject('Category already exist');
+            return Promise.reject('Category already exist');
           }
           return Promise.resolve();
         }
@@ -56,42 +56,42 @@ export default function Index() {
 
   const showModal = (type, id) => {
     setVisible(true);
-    setSubmitParam({type, id})
-    switch(type){
+    setSubmitParam({ type, id })
+    switch (type) {
       case 'add':
         setModalTitle('Add New Category')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
-              <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
-                <Input maxLength={255}/>
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+              <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name} >
+                <Input maxLength={255} />
               </Form.Item>
             </Form>
           </div>
         ))
         break
-        case 'edit':
-          const editIndex = tableData.findIndex((element)=> element.id === id)
-          const editData = tableData[editIndex]
-          form.setFieldsValue({
-            id,
-            name: editData.name,
-          })
-          setModalTitle('Edit Category')
-          setModalBody((
-            <div>
-              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
-                <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
-                  <Input maxLength={255}/>
-                </Form.Item>
-              </Form>
-            </div>
-          ))
-          break
-        case 'delete':
-          const deleteIndex = tableData.findIndex((element)=> element.id === id)
+      case 'edit':
+        const editIndex = tableData.findIndex((element) => element.id === id)
+        const editData = tableData[editIndex]
+        form.setFieldsValue({
+          id,
+          name: editData.name,
+        })
+        setModalTitle('Edit Category')
+        setModalBody((
+          <div>
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+              <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name} >
+                <Input maxLength={255} />
+              </Form.Item>
+            </Form>
+          </div>
+        ))
+        break
+      case 'delete':
+        const deleteIndex = tableData.findIndex((element) => element.id === id)
         const deleteData = tableData[deleteIndex]
-        
+
         setModalTitle('Delete Category')
         setModalBody((
           `Are you sure want to delete category ${deleteData.name}?`
@@ -101,7 +101,7 @@ export default function Index() {
     }
   };
 
-  const onFieldsChange = (changedField, allFields)=> {
+  const onFieldsChange = (changedField, allFields) => {
     console.log(allFields)
     let data = {}
     allFields.forEach(element => {
@@ -116,69 +116,69 @@ export default function Index() {
 
   const handleOk = () => {
     setConfirmLoading(true);
-    switch(submitParam.type){
+    switch (submitParam.type) {
       case 'add':
         category.addCategory({
-          name:formData.name.value
+          name: formData.name.value
         })
-        .then(result=> {
-          setVisible(false);
-          setConfirmLoading(false);
-          if(result.status === 'CREATED') {
-            notification.success({
-              message: result.message,
-              duration: 3
-            })
-          } 
-          form.resetFields()
-          loadTableData()
-        })
-        .catch(err => {
-          console.log(err)
-          message.error(err.message)
-        })
-      break
+          .then(result => {
+            setVisible(false);
+            setConfirmLoading(false);
+            if (result.status === 'CREATED') {
+              notification.success({
+                message: result.message,
+                duration: 3
+              })
+            }
+            form.resetFields()
+            loadTableData()
+          })
+          .catch(err => {
+            console.log(err)
+            message.error(err.message)
+          })
+        break
       case 'edit':
-        category.updateCategory(submitParam.id,{
-          name:formData.name.value
+        category.updateCategory(submitParam.id, {
+          name: formData.name.value
         })
-        .then(result=> {
-          setVisible(false);
-          setConfirmLoading(false);
-          if(result.status === 'SUCCESS') {
-            notification.success({
-              message: result.message,
-              duration: 3
-            })
-          } 
-          loadTableData()
-      })
-      .catch(err => {
-        console.log(err)
-        message.error(err.message)
-      })
-      break
+          .then(result => {
+            setVisible(false);
+            setConfirmLoading(false);
+            if (result.status === 'SUCCESS') {
+              notification.success({
+                message: result.message,
+                duration: 3
+              })
+            }
+            loadTableData()
+          })
+          .catch(err => {
+            console.log(err)
+            message.error(err.message)
+          })
+        break
       case 'delete':
         category.deleteCategory(submitParam.id)
-        .then(result=> {
-          setVisible(false);
-          setConfirmLoading(false);
-          if(result.status === 'SUCCESS') {
-            notification.success({
-              message: result.message,
-              duration: 3
-            })
-          } else {
-            notification.error({
-              message: result.status,
-              description: result.message
-            })
-          }
-          loadTableData()
-      })
-      break
+          .then(result => {
+            setVisible(false);
+            setConfirmLoading(false);
+            if (result.status === 'SUCCESS') {
+              notification.success({
+                message: result.message,
+                duration: 3
+              })
+            } else {
+              notification.error({
+                message: result.status,
+                description: result.message
+              })
+            }
+            loadTableData()
+          })
+        break
     }
-    
+
   };
 
   const handleCancel = () => {
@@ -189,24 +189,24 @@ export default function Index() {
 
   const loadTableData = (
     searchBy = searchVal,
-    page = tablePagination.page-1, 
+    page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,) => {
-      setTableLoading(true)
-      console.log(searchBy)
-      category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
-      .then(result=> {
-        if(result.result) {
+    setTableLoading(true)
+    console.log(searchBy)
+    category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
+      .then(result => {
+        if (result.result) {
           setTableData(result.result.currentPageContent)
           setTableTotalPages(result.result.totalPages)
           setTableLoading(false)
         } else {
           notification.error({
-            message: result.message? result.message : 'Error loading category data',
+            message: result.message ? result.message : 'Error loading category data',
             duration: 0
           })
         }
       })
-    }
+  }
 
   useEffect(() => {
     loadTableData()
@@ -222,10 +222,10 @@ export default function Index() {
     },
     {
       title: 'Category Name',
-      key:'name',
+      key: 'name',
       dataIndex: 'name',
       align: 'center',
-      width:'30%',
+      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
         multiple: 1,
@@ -239,7 +239,7 @@ export default function Index() {
       width: '30%',
       render: (t, r) => (
         <Space size="middle">
-          
+
           <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
           <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
         </Space>
@@ -247,9 +247,9 @@ export default function Index() {
     }
   ].filter(item => !item.hidden);
 
-  const onChangePagination = (page, pageSize)=> {
+  const onChangePagination = (page, pageSize) => {
     setTablePagination({
-      page, 
+      page,
       pageSize
     })
   }
@@ -258,35 +258,35 @@ export default function Index() {
     <Layout title="Category" subtitle="">
       <Row>
         <Col span={6}>
-        <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
+          <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Category</Button>
+          <Button type='primary' style={{ float: 'right' }} onClick={() => showModal('add')}>+ Add Category</Button>
         </Col>
       </Row>
       <br />
-      <Table  
-      columns={columns} 
-      dataSource={tableData} 
-      loading={tableLoading}
-      rowKey={(record)=> record.id}
-      pagination={{
-        onChange: onChangePagination,
-        total: tableTotalPages * tablePagination.pageSize,
-        pageSize: tablePagination.pageSize,
-        showSizeChanger: true
-      }}
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        loading={tableLoading}
+        rowKey={(record) => record.id}
+        pagination={{
+          onChange: onChangePagination,
+          total: tableTotalPages * tablePagination.pageSize,
+          pageSize: tablePagination.pageSize,
+          showSizeChanger: true
+        }}
 
       />
-        <Modal
-          title={modalTitle}
-          visible={visible}
-          onOk={handleOk}
-          confirmLoading={confirmLoading}
-          onCancel={handleCancel}
-        >
-       {modalBody}
-        </Modal>
+      <Modal
+        title={modalTitle}
+        visible={visible}
+        onOk={handleOk}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancel}
+      >
+        {modalBody}
+      </Modal>
     </Layout>
   )
 }
