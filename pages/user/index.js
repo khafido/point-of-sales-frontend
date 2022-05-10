@@ -1,45 +1,87 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Image, Table } from 'antd';
+import { Divider, Image, Modal, notification, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
+import * as user from 'api/User'
 
 export default function Index() {
-  const [userData, setUserData] = useState([]);
-  const [initialData, setInitialData] = useState([]);
-  const [order, setOrder] = useState({});
+  const [searchVal, setSearchVal] = useState('');
+  const [tableData, setTableData] = useState([]);
+  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10});
+  const [tableTotalPages, setTableTotalPages] = useState(0);
+
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
 
   useEffect(() => {
-    axios.get(process.env.NEXT_PUBLIC_API_URL+'v1/user/').then((res) => {
-      let users = res.data.map((item, key) => {
-        item.key = item.id;
-        item.numrow = key+1;
-        item.name = item.firstName+' '+item.lastName;
-        if (!item.photo) {
-          item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
-        }
-        item.roles = item.roles.map((role) => {
-          return role.name.replace('ROLE_', '');
-        }).join(', ');
-        return item;
-      });
-
-      setInitialData(users);
-      setUserData(users);
-    }).catch((err) => {
-      console.log(err);
-    });
-
-    const sortedData = userData.sort((a, b) => a.name.localeCompare(b.name));
-
-    const numberedData = sortedData.map((item, index) => ({
-      ...item,
-      numrow: index + 1,
-    }));
-    setUserData(numberedData);
+    loadTableData();
   }, []);
+
+  useEffect(()=> {
+    loadTableData()
+    setSearchLoading(false)
+  }, [tablePagination])
+
+  const loadTableData = (
+    searchBy = searchVal,
+    page = tablePagination.page-1, 
+    pageSize = tablePagination.pageSize,
+  )=> {
+    setTableLoading(true)
+
+    user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
+    .then(result=> {
+      // console.log('result', result);
+
+      if(result.result) {
+        let users = result.result.currentPageContent.map((item, key) => {
+          item.key = item.id;
+          item.numrow = key+1;
+          item.name = item.firstName+' '+item.lastName;
+          if (!item.photo) {
+            item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
+          };
+          return item;
+        });
+
+        // const numberedData = users.map((item, index) => ({
+        //   ...item,
+        //   numrow: index + 1,
+        // }));
+
+        // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
+
+        setTableData(users);
+        setTableTotalPages(result.result.totalPages);
+        setTableLoading(false);
+        setSearchLoading(false);
+      } else {
+        notification.error({
+          message: result.message? result.message : 'Error get user data',
+          duration: 0
+        });
+      }
+    })
+  }
+
+  const onChangePagination = (page, pageSize)=> {
+    setTablePagination({
+      page, 
+      pageSize
+    })
+  }
+
+  const onSearchData = (e)=> {
+    setSearchLoading(true)
+    setSearchVal(e.target.value)
+    setTablePagination({
+      page: 1,
+      pageSize: 10
+    })
+  }
 
   const columns = [
     {
@@ -107,25 +149,25 @@ export default function Index() {
       key: 'roles',
       width: 150,
       dataIndex: 'roles',
-      // render: (t, r) => 
-      //   r.roles.map((v, k) =>
-      //     // <span key={k} className='w-full text-center inline-block mt-1 px-5 py-1 text-white transition-colors duration-150 bg-stone-600 rounded-lg'>
-      //       {k}
-      //     // </span>
-      //   )
+      render: (t, r) => 
+        r.roles.map((v, k) =>
+          <div key={k}>
+            <Tag key={k} color="cyan">{v.name.replace('ROLE_', '')}</Tag>
+          </div>
+        )
     },
-    {
-      title: 'Assign',
-      key: 'assign',
-      dataIndex: 'assign',
-      width: 160,
-      render: (t, r) =>
-        <div className='place-content-center'>
-          <a key={r.id} onClick={() => assignOwner(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-2">
-            <TrophyOutlined /> Assign Owner
-          </a>
-        </div>
-    },
+    // {
+    //   title: 'Assign',
+    //   key: 'assign',
+    //   dataIndex: 'assign',
+    //   width: 160,
+    //   render: (t, r) =>
+    //     <div className='place-content-center'>
+    //       <a key={r.id} onClick={() => assignOwner(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-2">
+    //         <TrophyOutlined /> Assign Owner
+    //       </a>
+    //     </div>
+    // },
     {
       title: 'Action',
       key: 'action',
@@ -140,8 +182,12 @@ export default function Index() {
             </a>
           </Link>
 
-          <a onClick={() => deleteUser(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
+          <a onClick={() => deleteUserModal(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
             <DeleteOutlined /> Delete
+          </a>
+
+          <a key={r.id} onClick={() => assignOwner(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
+            <TrophyOutlined /> Assign Owner
           </a>
 
           {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
@@ -153,9 +199,7 @@ export default function Index() {
 
   function onChange(pagination, filters, sorter, extra) {
     // console.log('params', pagination, filters, sorter, extra);
-    // console.log(sorter.field);
-    // console.log(sorter.order);
-    let filteredData = userData;
+    let filteredData = tableData;
     
     filteredData = filteredData.sort((a, b) => {
       let field = (sorter.field) ? sorter.field : 'name';
@@ -171,30 +215,41 @@ export default function Index() {
       numrow: index + 1,
     }));
 
-    // console.log(filteredData);
-    setUserData(numberedFilteredData);
-  }
-
-  const filterData = (e) => {
-    const search = e.target.value;
-    const filteredData = initialData.filter(
-      item =>
-        item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.username.toLowerCase().includes(search.toLowerCase())
-    );
-    const numberedFilteredData = filteredData.map((item, index) => ({
-      ...item,
-      numrow: index + 1,
-    }));
-    setUserData(numberedFilteredData);
+    setTableData(numberedFilteredData);
   }
 
   const assignOwner = (id) => {
     alert(`Assign Owner to ${id}`);
   }
 
+  const { confirm } = Modal;
+
+  const deleteUserModal = (id) => {
+    confirm({
+      title: 'Are you sure delete this task?',
+      icon: <ExclamationCircleOutlined />,
+      content: '',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        deleteUser(id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  }
+
   const deleteUser = (id) => {
-    alert("delete/" + id);
+    user.deleteUser(id)
+      .then(res => {
+        console.log(res);
+        loadTableData();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   return (
@@ -207,12 +262,23 @@ export default function Index() {
         </Link>
       </div>
       <div className='w-[200px] float-right'>
-        <Search onChange={filterData} />
+        <Search placeholder='Search' onChange={onSearchData} />
       </div>
       <br />
       <br />
-      <Table className='' columns={columns} dataSource={userData} onChange={onChange} scroll={{ x: 1300 }} />
-
+      <Table className='' 
+        columns={columns} 
+        dataSource={tableData}
+        loading={tableLoading}
+        rowKey={(record)=> record.id}
+        pagination={{
+          onChange: onChangePagination,
+          total: tableTotalPages * tablePagination.pageSize,
+          pageSize: tablePagination.pageSize,
+          showSizeChanger: true
+        }} 
+        onChange={onChange} 
+        scroll={{ x: 1300 }} />
     </Layout>
   )
 }
