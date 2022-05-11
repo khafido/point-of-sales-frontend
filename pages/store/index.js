@@ -66,6 +66,7 @@ export default function Index() {
 	const fetchStore = () => {
 		let pg = page - 1
 		console.log('Fetching page', pg)
+		setLoading(true)
 		getAll(true, pg, pageSize, serachValue, sortBy, sortDir)
 			.then((res) => {
 				if (res) {
@@ -77,12 +78,14 @@ export default function Index() {
 					setTotalPage(res.data.result.totalPages * pageSize)
 					console.log('Total page fetched', res.data.result.totalPages)
 				}
+				setLoading(false)
 			})
 			.catch((err) => {
 				if (err) {
 					console.log(err)
 					message.error(err.response.data.message)
 				}
+				setLoading(false)
 			})
 	}
 
@@ -382,6 +385,7 @@ export default function Index() {
 			<Table
 				columns={columns}
 				dataSource={storeData}
+				loading={loading}
 				pagination={{
 					defaultCurrent: 1,
 					current: page,
