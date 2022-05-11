@@ -10,10 +10,25 @@ import * as user from 'api/User'
 export default function UserForm({ action, userData, userId }) {
     const router = useRouter();
     const [form] = Form.useForm();
+    
+    const [initialPhoto, setInitialPhoto] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+    }, []);
 
     useEffect(() => {
         if (action === 'Edit') {
             if (userData !== undefined) {
+                if (userData.photo) {
+                    setInitialPhoto({
+                        uid: userData.username,
+                        status: 'done',
+                        name: userData.firstName,
+                        url: userData.photo,
+                    });
+                }
+
                 form.setFieldsValue({
                     firstName: userData.firstName,
                     lastName: userData.lastName,
@@ -23,7 +38,7 @@ export default function UserForm({ action, userData, userId }) {
                     phone: userData.phone,
                     gender: userData.gender,
                     address: userData.address,
-                })
+                });
             }
         }
     }, [userData]);
@@ -158,6 +173,7 @@ export default function UserForm({ action, userData, userId }) {
             req.photo = null;
         }
 
+        // console.log('req', e);
         if (action === 'Add' || action === undefined) {
             console.log('create');
             console.log('create');
@@ -285,13 +301,30 @@ export default function UserForm({ action, userData, userId }) {
                     </Row>
                     <Row>
                         <Col>
+                        {(initialPhoto.uid) ?  
                             <Form.Item
                                 name="photo"
                                 label="Photo"
                                 rules={formRule.photo}
                             >
-
                                 <Upload
+                                    key={1}
+                                    accept="image/png, image/jpeg"
+                                    listType="picture"
+                                    maxCount={1}
+                                    defaultFileList={(userData.photo)?[initialPhoto]:[]}
+                                >
+                                    <Button>{<UploadOutlined />}Upload Photo</Button>
+                                </Upload>
+                            </Form.Item>
+                            :
+                            <Form.Item
+                                name="photo"
+                                label="Photo"
+                                rules={formRule.photo}
+                            >
+                                <Upload
+                                    key={2}
                                     accept="image/png, image/jpeg"
                                     listType="picture"
                                     maxCount={1}
@@ -299,6 +332,7 @@ export default function UserForm({ action, userData, userId }) {
                                     <Button>{<UploadOutlined />}Upload Photo</Button>
                                 </Upload>
                             </Form.Item>
+                            }
                         </Col>
                     </Row>
 
