@@ -19,9 +19,10 @@ export async function listUser(isPaginated, page, size, searchValue, sortBy, sor
                 searchValue,
                 sortBy,
                 sortDirection
-        }})
-        .then(response=> {
-            if(response) {
+            }
+        })
+        .then(response => {
+            if (response) {
                 return response.data
             }
             return false
@@ -40,8 +41,8 @@ export async function addUser(req) {
                 'Access-Control-Allow-Credentials': 'true',
             },
         })
-        .then(response=> {
-            if(response) {
+        .then(response => {
+            if (response) {
                 return response.data
             }
             return false
@@ -51,7 +52,7 @@ export async function addUser(req) {
 
 export async function editUser(id, req) {
     return apiClient
-        .put(url+"/"+id, req, {
+        .put(url + "/" + id, req, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'PUT',
@@ -60,8 +61,8 @@ export async function editUser(id, req) {
                 'Access-Control-Allow-Credentials': 'true',
             },
         })
-        .then(response=> {
-            if(response) {
+        .then(response => {
+            if (response) {
                 return response.data
             }
             return false
@@ -71,7 +72,7 @@ export async function editUser(id, req) {
 
 export async function getById(id) {
     return apiClient
-        .get(url+"/"+id, {
+        .get(url + "/" + id, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET',
@@ -80,8 +81,8 @@ export async function getById(id) {
                 'Access-Control-Allow-Credentials': 'true',
             },
         })
-        .then(response=> {
-            if(response) {
+        .then(response => {
+            if (response) {
                 return response.data
             }
             return false
@@ -91,9 +92,9 @@ export async function getById(id) {
 
 export async function deleteUser(id) {
     return apiClient
-        .patch(url+"/"+id)
-        .then(response=> {
-            if(response) {
+        .patch(url + "/" + id)
+        .then(response => {
+            if (response) {
                 return response.data
             }
             return false
@@ -112,7 +113,7 @@ export async function checkUsernameIsExist(username) {
                 'Access-Control-Allow-Credentials': 'true',
             },
         })
-        .then(response=> {
+        .then(response => {
             return response;
         }
         ).catch(err => console.log(err))
@@ -129,18 +130,18 @@ export async function checkEmailIsExist(email) {
                 'Access-Control-Allow-Credentials': 'true',
             },
         })
-        .then(response=> {
+        .then(response => {
             return response;
         }
         ).catch(err => console.log(err))
 }
 
-export async function addRole(id, roleName){
+export async function addRole(id, req) {
     return apiClient
         .patch(`${url}/${id}/add-roles`, req, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Methods': 'PATCH',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '3600',
                 'Access-Control-Allow-Credentials': 'true',
@@ -152,12 +153,12 @@ export async function addRole(id, roleName){
         .catch(err => console.log(err))
 }
 
-export async function removeRole(id, roleName){
+export async function removeRole(id, req) {
     return apiClient
         .patch(`${url}/${id}/remove-roles`, req, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Methods': 'PATCH',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '3600',
                 'Access-Control-Allow-Credentials': 'true',
