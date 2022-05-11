@@ -33,3 +33,15 @@ export async function update(id, storeData) {
 export async function remove(id) {
 	return apiClient.delete(`${url}/${id}`)
 }
+
+export async function assignManager({storeId, userId}) {
+	return apiClient.post(`${url}/assign-manager`, {
+		storeId, userId
+	}).then(response=> {
+		if(response) {
+			return response.data
+		}
+		return false
+	})
+	.catch(err => console.log(err))
+}
