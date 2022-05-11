@@ -25,6 +25,8 @@ export default function Index() {
   const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
   const [tableTotalPages, setTableTotalPages] = useState(0)
 
+  const defaultImage = "https://archive.org/download/no-photo-available/no-photo-available.png"
+
   const onSearchData = (value , e)=> {
     setSearchLoading(true)
     setSearchVal(value)
@@ -157,7 +159,7 @@ export default function Index() {
   };
 
   const onFieldsChange = (changedField, allFields)=> {
-    console.log("all fields = ", allFields)
+    // console.log("all fields = ", allFields)
     let data = {}
     allFields.forEach(element => {
       data[`${element.name[0]}`] = {
@@ -166,17 +168,23 @@ export default function Index() {
       }
     });
     setFormData(data)
-    console.log("form data = ", formData)
-
   }
 
   const handleOk = () => {
     setConfirmLoading(true);
     switch(submitParam.type){
       case 'add':
+        let img
+        if (formData.image.value === undefined) {
+          formData.image.value = null
+          img = formData.image.value
+        }
+        else {
+          img = formData.image.value.file.thumbUrl
+        }
         item.addItem({
           name: formData.name.value,
-          image: formData.image.value.file.thumbUrl,
+          image: img,
           barcode: formData.barcode.value,
           category: formData.category.value,
           packaging: formData.packaging.value,
@@ -199,12 +207,11 @@ export default function Index() {
         })
       break
       case 'edit':
-        let img
-        if (formData.image !== undefined) {
-            img = formData.image
+        if (typeof(formData.image.value) == "string") {
+          img = formData.image.value
         }
         else {
-            img = null
+          img = formData.image.value.file.thumbUrl
         }
 
         item.updateItem(submitParam.id,{
@@ -282,6 +289,11 @@ export default function Index() {
       item.listItems(true, page, pageSize, searchBy, 'name', 'asc')
       .then(result=> {
         if(result.result) {
+          result.result.currentPageContent.map(item => {
+            if (item.image == "string" | item.image == "" | item.image == null) {
+                item.image = defaultImage;
+            };
+        })
           setTableData(result.result.currentPageContent)
           setTableTotalPages(result.result.totalPages)
           setTableLoading(false)
@@ -322,7 +334,7 @@ export default function Index() {
       key: 'image',
       dataIndex: 'image',
       width: 200,
-      render: (t, r) => <Image key={r.id} width={40} preview={false} src={`${r.image}`} alt="image" />,
+      render: (t, r) => <Image key={r.id} width={150} preview={false} src={`${r.image}`} alt="image" />,
     },
     {
       title: 'Barcode',

@@ -15,11 +15,6 @@ export async function listItems(isPaginated, page, size, searchValue, sortBy, so
         }})
         .then(response => {
             if(response){
-                response.data.result.currentPageContent.map(item => {
-                    if (item.image == "string" | item.image == "" | item.image == null) {
-                        item.image = "https://archive.org/download/no-photo-available/no-photo-available.png";
-                    };
-                })
                 return response.data
             }
             return false
