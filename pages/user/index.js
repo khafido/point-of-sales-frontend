@@ -17,6 +17,11 @@ export default function Index() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
 
+  // roles
+  const [formData, setFormData] = useState([]);
+  const [form] = Form.useForm();
+  const [submitParam, setSubmitParam] = useState('');
+
   useEffect(() => {
     loadTableData();
   }, []);
@@ -254,33 +259,54 @@ export default function Index() {
     .then(res => {
       for (let i = 0; i <= 5; i++) {
         const value = res.data[i].name;
-        console.log('val', value)
         options.push({
           value,
         })
       }
     })
 
-  function handleChange(value) {
-    console.log(` ${value}`)
+  const onFieldsChange = (changedField, allFields) => {
+    let data = []
+    allFields.forEach(element => {
+      data[`${element.name[0]}`] = {
+        value: element.value,
+        errors: element.errors
+      }
+    });
+    console.log('data', data.roles.value)
+    setFormData(data)
   }
 
   const assignUserRoleModal = (id) => {
+    setSubmitParam(id);
+    const editIndex = tableData.findIndex((element) => element.id === id)
+    const editData = tableData[editIndex]
+    const showed = []
+    editData.roles.forEach(r => showed.push(r.name))
+    form.setFieldsValue({
+      id,
+      roles: showed
+    })
     confirm({
       title: 'Add roles',
       icon: <UserAddOutlined />,
       content:
-        <Select
-          mode="multiple"
-          style={{ width: '100%' }}
-          placeholder="Please select"
-          defaultValue={[]}
-          onChange={handleChange}
-          options={options}
-        />,
-      okText: 'Yes',
-      okType: 'success',
-      cancelText: 'No',
+        <div>
+          <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+            <Form.Item label='Roles' name='roles' hasFeedback >
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Please select"
+                options={options}
+              />
+            </Form.Item>
+          </Form>
+        </div>
+      ,
+      onOk() {
+        assignUserRole(id);
+      },
     })
   }
 
@@ -296,15 +322,19 @@ export default function Index() {
       });
   }
 
-  const assignUserRole = (id, role) => {
-    user.addRole(id, role)
-      .then(res => {
-        console.log(res);
-        loadTableData();
-      })
-      .catch(err => {
-        console.log(err)
-      })
+  const assignUserRole = (id) => {
+    console.log('data from ', formData.roles.value)
+
+    // formData.roles.value.forEach(r => {
+    //   user.addRole(id, { roles: r })
+    //     .then(res => {
+    //       console.log(res);
+    //       loadTableData();
+    //     })
+    //     .catch(err => {
+    //       console.log(err)
+    //     })
+    // })
   }
 
   return (
