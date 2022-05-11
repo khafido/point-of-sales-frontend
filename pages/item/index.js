@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
 import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select } from 'antd';
 import * as item from 'api/Item';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
 import * as category from 'api/Category';
 
 export default function Index() {
@@ -61,7 +61,6 @@ export default function Index() {
       {
         validator: async (rule, value) => {
           let status = await item.checkBarcodeExist(value).then(res => {
-              console.log("barcode exist = ", res)
               return res;
           });
           console.log('barcode', status);
@@ -92,7 +91,7 @@ export default function Index() {
               <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255}/>
               </Form.Item>
-              <Form.Item label='Image'name='image' hasFeedback rules={formRule.image} >
+              <Form.Item label='Image'name='image' hasFeedback rules={formRule.image} getValueFromEvent={normFile}>
                 <Upload
                     accept="image/png, image/jpeg"
                     listType="picture"
@@ -118,6 +117,7 @@ export default function Index() {
         case 'edit':
           const editIndex = tableData.findIndex((element)=> element.id === id)
           const editData = tableData[editIndex]
+          console.log("edit data = ", editData)
           form.setFieldsValue({
             id,
             name: editData.name,
@@ -133,11 +133,13 @@ export default function Index() {
                 <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                   <Input maxLength={255}/>
                 </Form.Item>
-                <Form.Item label='Image'name='image' hasFeedback rules={formRule.image} >
+                <Form.Item label='Image'name='image' hasFeedback rules={formRule.image} getValueFromEvent={normFile}>
                   <Upload
                       accept="image/png, image/jpeg"
                       listType="picture"
                       maxCount={1}
+                      defaultFileList={(editData.image)? [{thumbUrl: editData.image}]: []}
+
                   >
                       <Button>{<UploadOutlined />}Upload Photo</Button>
                   </Upload>
@@ -169,16 +171,37 @@ export default function Index() {
   };
 
   const onFieldsChange = (changedField, allFields)=> {
-    // console.log("all fields = ", allFields)
+    console.log("all fields = ", allFields)
     let data = {}
-    allFields.forEach(element => {
+    let val = ""
+    allFields.forEach((element, index) => {
+      if (index == 4 && element.value) {
+        val = element.value.charAt(0).toUpperCase() + element.value.slice(1)
+      }
+      else {
+        val = element.value
+      }
+
       data[`${element.name[0]}`] = {
-        value: element.value,
+        value: val,
         errors: element.errors
       }
+
     });
+    console.log("data = ", data)
     setFormData(data)
   }
+  
+  const normFile = (e) => {
+    // console.log("e = ", e)
+    // console.log("e array = ", Array.isArray(e))
+    // console.log("e & e.fileList = ", e && e.fileList)
+    
+    if (Array.isArray(e)) {
+        return e;
+    }
+    return e && e.fileList;
+  };
 
   const handleOk = () => {
     setConfirmLoading(true);
@@ -186,11 +209,10 @@ export default function Index() {
       case 'add':
         let img
         if (formData.image.value === undefined) {
-          formData.image.value = null
-          img = formData.image.value
+          img = null
         }
         else {
-          img = formData.image.value.file.thumbUrl
+          img = formData.image.value[0].thumbUrl
         }
         item.addItem({
           name: formData.name.value,
@@ -220,8 +242,11 @@ export default function Index() {
         if (typeof(formData.image.value) == "string") {
           img = formData.image.value
         }
+        else if (formData.image.value.length == 0) {
+          img = null
+        }
         else {
-          img = formData.image.value.file.thumbUrl
+          img = formData.image.value[0].thumbUrl
         }
 
         item.updateItem(submitParam.id,{
@@ -241,6 +266,7 @@ export default function Index() {
             })
           } 
           loadTableData()
+          form.resetFields()
       })
       .catch(err => {
         console.log(err)

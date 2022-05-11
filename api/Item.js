@@ -32,7 +32,6 @@ export async function addItem({name, image, barcode, category, packaging}){
             packaging
         })
         .then(response => {
-            console.log(response)
             return response.data
         })
         .catch(err => console.log(err))
@@ -48,7 +47,6 @@ export async function updateItem(id, {name, image, barcode, category, packaging}
             packaging
         })
         .then(response => {
-            console.log(response)
             if(response){
                 return response.data
             }
@@ -61,7 +59,6 @@ export async function deleteItem(id){
     return apiClient
         .patch(`${url}/${id}`)
         .then(response => {
-            console.log(response)
             if(response){
                 return response.data
             }
@@ -74,7 +71,6 @@ export async function checkBarcodeExist(barcode){
     return apiClient
         .get(`${url}/check-barcode`, {params: {barcode}})
         .then(response => {
-            console.log(response)
             return response.data
         })
         .catch(err => console.log(err))
