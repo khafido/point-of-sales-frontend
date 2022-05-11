@@ -61,7 +61,7 @@ export default function Index() {
 
 	useEffect(() => {
 		fetchStore()
-	}, [serachValue, page])
+	}, [serachValue, page, sortBy, sortDir])
 
 	const fetchStore = () => {
 		let pg = page - 1
@@ -160,9 +160,10 @@ export default function Index() {
 	}
 
 	const onSortAndPagination = (pagination, sorter) => {
-		setSortBy(sorter.columnKey)
-		setSortDir(sorter.order)
+		setSortBy(sorter.field)
+		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
 		setPage(pagination.current)
+		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
 	}
 
 	const StoreForm = () => {
@@ -387,8 +388,6 @@ export default function Index() {
 					pageSize: pageSize,
 					total: totalPage,
 					onChange: (pageVal) => {
-						console.log('Total page', totalPage)
-						console.log('Current Page : ', page, 'Trget Page : ', pageVal)
 						setPage(pageVal)
 					},
 				}}
