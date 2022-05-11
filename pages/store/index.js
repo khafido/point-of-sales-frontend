@@ -72,7 +72,6 @@ export default function Index() {
 
 	useEffect(() => {
 		fetchStore()
-		fetchManager()
 	}, [serachValue, page, sortBy, sortDir])
 
 	useEffect(() => {
@@ -204,7 +203,7 @@ export default function Index() {
 		})
 		setVisibleAssignManager(true)
 	}
-	
+
 	const onSortAndPagination = (pagination, sorter) => {
 		setSortBy(sorter.field)
 		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
