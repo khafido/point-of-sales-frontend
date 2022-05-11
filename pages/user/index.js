@@ -8,6 +8,7 @@ import * as user from 'api/User';
 import axios from 'axios';
 
 export default function Index() {
+  const { Option } = Select;
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
   const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
@@ -18,9 +19,14 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
 
   // roles
-  const [formData, setFormData] = useState([]);
+  const [visible, setVisible] = useState(false)
+  const [formData, setFormData] = useState({});
   const [form] = Form.useForm();
   const [submitParam, setSubmitParam] = useState('');
+
+  const handleCancel = () => {
+    setVisible(false);
+  }
 
   useEffect(() => {
     loadTableData();
@@ -253,31 +259,31 @@ export default function Index() {
       },
     });
   }
+  const [options, setOptions] = useState([])
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/v1/role')
+      .then(res => {
+        console.log('res', res.data.result)
+        setOptions(res.data.result)
+      })
+      .catch(err => console.log(err))
+  }, [])
 
-  const options = []
-  axios.get('http://localhost:8080/api/v1/role')
-    .then(res => {
-      for (let i = 0; i <= 5; i++) {
-        const value = res.data[i].name;
-        options.push({
-          value,
-        })
-      }
-    })
+  console.log('opt', options)
 
   const onFieldsChange = (changedField, allFields) => {
-    let data = []
+    let data = {}
     allFields.forEach(element => {
       data[`${element.name[0]}`] = {
         value: element.value,
         errors: element.errors
       }
     });
-    console.log('data', data.roles.value)
     setFormData(data)
   }
 
   const assignUserRoleModal = (id) => {
+    setVisible(true);
     setSubmitParam(id);
     const editIndex = tableData.findIndex((element) => element.id === id)
     const editData = tableData[editIndex]
@@ -287,27 +293,7 @@ export default function Index() {
       id,
       roles: showed
     })
-    confirm({
-      title: 'Add roles',
-      icon: <UserAddOutlined />,
-      content:
-        <div>
-          <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
-            <Form.Item label='Roles' name='roles' hasFeedback >
-              <Select
-                mode="multiple"
-                style={{ width: '100%' }}
-                placeholder="Please select"
-                options={options}
-              />
-            </Form.Item>
-          </Form>
-        </div>
-      ,
-      onOk() {
-        assignUserRole(id);
-      },
-    })
+
   }
 
 
@@ -322,19 +308,19 @@ export default function Index() {
       });
   }
 
-  const assignUserRole = (id) => {
+  const assignUserRole = () => {
     console.log('data from ', formData.roles.value)
 
-    // formData.roles.value.forEach(r => {
-    //   user.addRole(id, { roles: r })
-    //     .then(res => {
-    //       console.log(res);
-    //       loadTableData();
-    //     })
-    //     .catch(err => {
-    //       console.log(err)
-    //     })
-    // })
+    formData.roles.value.forEach(r => {
+      user.addRole(submitParam, { roles: r })
+        .then(res => {
+          console.log(res);
+          loadTableData();
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    })
   }
 
   return (
@@ -364,6 +350,28 @@ export default function Index() {
         }}
         onChange={onChange}
         scroll={{ x: 1300 }} />
+
+      <Modal
+        title='Add roles'
+        visible={visible}
+        onOk={assignUserRole}
+        onCancel={handleCancel}
+      >
+        <div>
+          <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+            <Form.Item label='Roles' name='roles' hasFeedback >
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Please select"
+              // options={options}
+              >
+                {options.map(r => { return <Option value={r.name} key={r.id}>{r.name}</Option> })}
+              </Select>
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
     </Layout>
   )
 }
