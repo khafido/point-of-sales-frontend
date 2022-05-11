@@ -25,8 +25,10 @@ export default function Index() {
   // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
-  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
+  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 5})
   const [tableTotalPages, setTableTotalPages] = useState(0)
+  const [sortBy, setSortBy] = useState()
+  const [sortDir, setSortDir] = useState()
 
   const defaultImage = "https://archive.org/download/no-photo-available/no-photo-available.png"
 
@@ -38,7 +40,7 @@ export default function Index() {
     setSearchVal(value)
     setTablePagination({
       page: 1,
-      pageSize: 10
+      pageSize: tablePagination.pageSize
     })
   }
 
@@ -102,7 +104,6 @@ export default function Index() {
                 <Input maxLength={255}/>
               </Form.Item>
               <Form.Item label='Category'name='category' hasFeedback required rules={formRule.category} >
-                {/* <Input maxLength={255}/> */}
                 {selectCategory()}
 
               </Form.Item>
@@ -144,7 +145,6 @@ export default function Index() {
                   <Input maxLength={255}/>
                 </Form.Item>
                 <Form.Item label='Category'name='category' hasFeedback required rules={formRule.category} >
-                  {/* <Input maxLength={255}/> */}
                   {selectCategory()}
                 </Form.Item>
                 <Form.Item label='Packaging'name='packaging' hasFeedback >
@@ -281,7 +281,7 @@ export default function Index() {
     pageSize = tablePagination.pageSize,) => {
       setTableLoading(true)
       console.log(searchBy)
-      item.listItems(true, page, pageSize, searchBy, 'name', 'asc')
+      item.listItems(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result=> {
         if(result.result) {
           result.result.currentPageContent.map(item => {
@@ -316,7 +316,7 @@ export default function Index() {
     setSearchLoading(false)
     loadCategories()
 
-  }, [tablePagination]);
+  }, [tablePagination, sortBy, sortDir]);
 
 
   const columns = [
@@ -332,9 +332,8 @@ export default function Index() {
       dataIndex: 'name',
       fixed: 'left',
       width: 250,
-      sorter: {
-        compare: (a, b) => a.name - b.name,
-      },
+      sorter: (a, b) => a.name.localeCompare(b.name),
+
     },
     {
       title: 'Image',
@@ -354,18 +353,16 @@ export default function Index() {
       key: 'category',
       dataIndex: 'category',
       width: 200,
-      sorter: {
-        compare: (a, b) => a.category - b.category,
-      },
+      sorter: (a, b) => a.category.localeCompare(b.category),
+
     },
     {
       title: 'Packaging',
       key: 'packaging',
       dataIndex: 'packaging',
       width: 200,
-      sorter: {
-        compare: (a, b) => a.packaging - b.packaging,
-      },
+      sorter: (a, b) => a.packaging.localeCompare(b.packaging),
+
     },
     {
       title: 'Action',
@@ -401,6 +398,12 @@ export default function Index() {
       pageSize
     })
   }
+
+	const onSortAndPagination = (pagination, sorter) => {
+		setSortBy(sorter.field)
+		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
+		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+	}
 
   const selectCategory = () => {
     console.log("categories = ", categories)
@@ -441,6 +444,9 @@ export default function Index() {
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
         }}
+				onChange={(pagination, filter, sorter) => {
+					onSortAndPagination(pagination, sorter)
+				}}
       />
         <Modal
           title={modalTitle}
