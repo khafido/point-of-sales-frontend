@@ -136,6 +136,12 @@ export default function Index() {
       width: 130,
     },
     {
+      title: 'Birth Date',
+      key: 'birthDate',
+      dataIndex: 'birthDate',
+      width: 120,
+    },
+    {
       title: 'Address',
       dataIndex: 'address',
     },
