@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { create, getAll, remove, update } from 'api/Store'
+import { create, getAll, remove, update, assignManager } from 'api/Store'
+import * as role from 'api/Role'
 import {
 	Form,
 	Input,
@@ -15,6 +16,7 @@ import {
 	message,
 	Popconfirm,
 	Select,
+	notification,
 	Pagination,
 } from 'antd'
 import Layout from '@components/Layout'
@@ -23,9 +25,13 @@ import {
 	EditOutlined,
 	UserAddOutlined,
 	UserOutlined,
+	UserSwitchOutlined,
 } from '@ant-design/icons'
+import { duration } from 'moment'
+
 const { Search } = Input
 const { Option } = Select
+
 const rules = {
 	name: [
 		{
@@ -45,9 +51,13 @@ export default function Index() {
 	const [mode, setMode] = useState('Create')
 	const [visible, setVisible] = useState(false)
 	const [visibleDetail, setVisibleDetail] = useState(false)
+	const [visibleAssignManager, setVisibleAssignManager] = useState(false)
 	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
 	const [loading, setLoading] = useState(true)
+	const [loadingSelectManager, setLoadingSelectManager] = useState(true)
+	const [loadingSubmitManager, setLoadingSubmitManager] = useState(false)
+	const [roleManagerData , setRoleManagerData] = useState(null)
 
 	const [page, setPage] = useState(1)
 	const [pageSize, setPageSize] = useState(10)
@@ -57,11 +67,16 @@ export default function Index() {
 	const [totalPage, setTotalPage] = useState(1)
 
 	const [form] = Form.useForm()
-	const [assignForm] = Form.useForm()
+	const [assignEmployeeForm] = Form.useForm()
+	const [assignManagerForm] = Form.useForm()
 
 	useEffect(() => {
 		fetchStore()
 	}, [serachValue, page, sortBy, sortDir])
+
+	useEffect(() => {
+		fetchManager()
+	}, [])
 
 	const fetchStore = () => {
 		let pg = page - 1
@@ -87,6 +102,24 @@ export default function Index() {
 				}
 				setLoading(false)
 			})
+	}
+
+	const fetchManager = () => {
+		role.getRoleById(3)
+		.then(result=> {
+			console.log(result.result)
+			setRoleManagerData(result.result)
+			setLoadingSelectManager(false)
+		})
+		.catch((err) => {
+			if (err) {
+				console.log(err)
+				notification.error({
+					message: 'Failed to load list of manager',
+					duration: 0
+				})
+			}
+		})
 	}
 
 	const onSave = (value) => {
@@ -160,6 +193,15 @@ export default function Index() {
 	const onShowDetailStore = (store) => {
 		setVisibleDetail(true)
 		console.log('Showing Detail Store : ', store.id)
+	}
+
+	const onAssignManager  = (data) => {
+		assignManagerForm.setFieldsValue({
+			storeId: data.id,
+			storeName: data.name,
+			currentManager: data.manager? `${data.manager.firstName} ${data.manager.lastName}` : '-'
+		})
+		setVisibleAssignManager(true)
 	}
 
 	const onSortAndPagination = (pagination, sorter) => {
@@ -236,6 +278,14 @@ export default function Index() {
 			render: (text, record) => (
 				<Space split={<Divider type="vertical" />}>
 					<Button
+						icon={<UserSwitchOutlined />}
+						title="Assign Manager"
+						size="large"
+						onClick={(e) => {
+							onAssignManager(record)
+						}}
+					></Button>
+					<Button
 						icon={<UserOutlined />}
 						size="large"
 						onClick={(e) => {
@@ -246,6 +296,7 @@ export default function Index() {
 						icon={<EditOutlined />}
 						size="large"
 						onClick={(e) => {
+							console.log(record)
 							onEdit(record)
 						}}
 					></Button>
@@ -292,7 +343,7 @@ export default function Index() {
 				footer={null}
 				onCancel={() => {
 					setVisibleDetail(false)
-					assignForm.resetFields()
+					assignEmployeeForm.resetFields()
 				}}
 				// onOk={() => {
 				// 	form
@@ -307,9 +358,9 @@ export default function Index() {
 				// }}
 			>
 				<Form
-					form={assignForm}
+					form={assignEmployeeForm}
 					layout="inline"
-					name="assignManagerForm"
+					name="assignEmployeeForm"
 					initialValues={{
 						employee: '',
 						role: '',
@@ -336,9 +387,8 @@ export default function Index() {
 						style={{ width: 100 }}
 					>
 						<Select placeholder="Select a role">
-							<Option value="role1">Manager</Option>
 							<Option value="role2">Cashier</Option>
-							<Option value="role">Supplier</Option>
+							<Option value="role">Stockist</Option>
 						</Select>
 					</Form.Item>
 					<Form.Item>
@@ -352,6 +402,99 @@ export default function Index() {
 				</Form>
 				<br />
 				<Table columns={storeDetailColumns} dataSource={null} />
+			</Modal>
+		)
+	}
+
+	const AssignManagerModal = ()=> {
+		return (
+			<Modal
+				visible={visibleAssignManager}
+				title='Assign Manager'
+				onCancel={()=> setVisibleAssignManager(false)}
+				onOk={()=> {
+					assignManagerForm.validateFields()
+					.then(value=> {
+						setLoadingSubmitManager(true)
+						assignManager({
+							storeId: value.storeId,
+							userId: value.manager
+						}).then(result=> {
+							setVisibleAssignManager(false)
+							setLoadingSubmitManager(false)
+							if(result.status === 'SUCCESS') {
+								notification.success({
+									message: result.message,
+									duration: 3
+								})
+							} else {
+								notification.error({
+									message: result.status,
+									description: result.message
+								})
+							}
+							assignManagerForm.resetFields()
+							fetchManager()
+							fetchStore()
+						})
+					})
+				}}
+			>
+				<Form
+					form={assignManagerForm}
+					layout='vertical'
+				>
+					<Form.Item
+						label="Store ID"
+						name="storeId"
+						hidden
+					>
+						<Input readOnly />
+					</Form.Item>
+					<Form.Item
+						label="Store Name"
+						name="storeName"
+					>
+						<Input readOnly />
+					</Form.Item>
+					<Form.Item
+						label="Current Manager"
+						name="currentManager"
+					>
+						<Input  readOnly/>
+					</Form.Item>
+					<Form.Item
+						label="Assign New Manager"
+						name="manager"
+						rules={[{ required: true, message: 'Please select new manager' }]}
+					>
+						<Select
+							showSearch
+							loading={loadingSelectManager}
+							filterOption={(input, option) =>
+								option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+							}
+							filterSort={(optionA, optionB) =>
+								optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+							}
+						>
+							{roleManagerData? roleManagerData.users.map(item=> {
+								return <Select.Option 
+									value={item.id} 
+									key={item.id} 
+									disabled={item.managerAt}
+								>
+									{item.managerAt? 
+										`${item.firstName} ${item.lastName} (Manager at ${item.managerAt.name})` 
+										: 
+										`${item.firstName} ${item.lastName}`
+									}
+								</Select.Option>
+							}) : null}
+							
+						</Select>
+					</Form.Item>
+				</Form>
 			</Modal>
 		)
 	}
@@ -408,6 +551,7 @@ export default function Index() {
 				mode={mode}
 			/>
 			<DetailStore />
+			<AssignManagerModal />
 		</Layout>
 	)
 }
