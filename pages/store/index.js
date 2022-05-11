@@ -17,6 +17,7 @@ import {
 	Popconfirm,
 	Select,
 	notification,
+	Pagination,
 } from 'antd'
 import Layout from '@components/Layout'
 import {
@@ -53,12 +54,17 @@ export default function Index() {
 	const [visibleAssignManager, setVisibleAssignManager] = useState(false)
 	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
-	const [currPage, setCurrPage] = useState(0)
-	const [totalPage, setTotalPage] = useState(1)
 	const [loading, setLoading] = useState(true)
 	const [loadingSelectManager, setLoadingSelectManager] = useState(true)
 	const [loadingSubmitManager, setLoadingSubmitManager] = useState(false)
 	const [roleManagerData , setRoleManagerData] = useState(null)
+
+	const [page, setPage] = useState(1)
+	const [pageSize, setPageSize] = useState(10)
+	const [serachValue, setSearchValue] = useState('')
+	const [sortBy, setSortBy] = useState('')
+	const [sortDir, setSortDir] = useState('')
+	const [totalPage, setTotalPage] = useState(1)
 
 	const [form] = Form.useForm()
 	const [assignEmployeeForm] = Form.useForm()
@@ -67,24 +73,35 @@ export default function Index() {
 	useEffect(() => {
 		fetchStore()
 		fetchManager()
+	}, [serachValue, page, sortBy, sortDir])
+
+	useEffect(() => {
+		fetchManager()
 	}, [])
 
 	const fetchStore = () => {
-		getAll()
+		let pg = page - 1
+		console.log('Fetching page', pg)
+		setLoading(true)
+		getAll(true, pg, pageSize, serachValue, sortBy, sortDir)
 			.then((res) => {
 				if (res) {
 					const stores = res.data.result.currentPageContent.map((val) => {
 						return { ...val, key: val.id }
 					})
 					setStoreData(stores)
-					setCurrPage(res.data.result.currentPage)
-					setTotalPage(res.totalPage)
+					setPage(res.data.result.currentPage + 1)
+					setTotalPage(res.data.result.totalPages * pageSize)
+					console.log('Total page fetched', res.data.result.totalPages)
 				}
+				setLoading(false)
 			})
 			.catch((err) => {
 				if (err) {
+					console.log(err)
 					message.error(err.response.data.message)
 				}
+				setLoading(false)
 			})
 	}
 
@@ -140,7 +157,8 @@ export default function Index() {
 	}
 
 	const onSearch = (value) => {
-		alert(value)
+		setSearchValue(value)
+		console.log(storeData)
 	}
 
 	const onCancel = () => {
@@ -185,6 +203,13 @@ export default function Index() {
 			currentManager: data.manager? `${data.manager.firstName} ${data.manager.lastName}` : '-'
 		})
 		setVisibleAssignManager(true)
+	}
+	
+	const onSortAndPagination = (pagination, sorter) => {
+		setSortBy(sorter.field)
+		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
+		setPage(pagination.current)
+		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
 	}
 
 	const StoreForm = () => {
@@ -377,11 +402,7 @@ export default function Index() {
 					</Form.Item>
 				</Form>
 				<br />
-				<Table
-					columns={storeDetailColumns}
-					dataSource={null}
-					// pagination={{ current: currPage + 1, pageSize: totalPage }}
-				/>
+				<Table columns={storeDetailColumns} dataSource={null} />
 			</Modal>
 		)
 	}
@@ -496,7 +517,10 @@ export default function Index() {
 				<Col>
 					<Search
 						placeholder="Search store"
-						onSearch={onSearch}
+						// onSearch={onSearch}
+						onChange={(e) => {
+							onSearch(e.target.value)
+						}}
 						enterButton
 					/>
 				</Col>
@@ -505,7 +529,19 @@ export default function Index() {
 			<Table
 				columns={columns}
 				dataSource={storeData}
-				pagination={{ current: currPage + 1, pageSize: totalPage }}
+				loading={loading}
+				pagination={{
+					defaultCurrent: 1,
+					current: page,
+					pageSize: pageSize,
+					total: totalPage,
+					onChange: (pageVal) => {
+						setPage(pageVal)
+					},
+				}}
+				onChange={(pagination, filter, sorter) => {
+					onSortAndPagination(pagination, sorter)
+				}}
 			/>
 			<StoreForm
 				visible={visible}
