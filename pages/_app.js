@@ -3,9 +3,14 @@ import 'antd/dist/antd.css';
 import '../styles/custom.css';
 import Layout from '@components/Layout';
 
+import { Provider } from 'react-redux'
+import { store } from '../redux/index'
+
 function MyApp({ Component, pageProps }) {
   return (
-    <Component {...pageProps} />
+    <Provider store={store}>
+      <Component {...pageProps} />
+    </Provider>
   )
 }
 
