@@ -61,10 +61,11 @@ export default function Index() {
       {
         validator: async (rule, value) => {
           let status = await item.checkBarcodeExist(value).then(res => {
+              console.log("barcode exist = ", res)
               return res;
           });
           console.log('barcode', status);
-          if (status && value.length > 6) {
+          if (status) {
               return Promise.reject('Barcode is already exist');
           }
           return Promise.resolve();
