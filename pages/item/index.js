@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
-import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space } from 'antd';
+import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select } from 'antd';
 import * as item from 'api/Item';
 import { UploadOutlined } from '@ant-design/icons';
+import * as category from 'api/Category';
 
 export default function Index() {
   const [form] = Form.useForm()
@@ -18,7 +19,9 @@ export default function Index() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-  
+    
+  const [categories, setCategories] = useState([])
+
   // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
   const [tableData, setTableData] = useState([]);
@@ -26,6 +29,9 @@ export default function Index() {
   const [tableTotalPages, setTableTotalPages] = useState(0)
 
   const defaultImage = "https://archive.org/download/no-photo-available/no-photo-available.png"
+
+  const children = []
+  const { Option } = Select;
 
   const onSearchData = (value , e)=> {
     setSearchLoading(true)
@@ -96,7 +102,9 @@ export default function Index() {
                 <Input maxLength={255}/>
               </Form.Item>
               <Form.Item label='Category'name='category' hasFeedback required rules={formRule.category} >
-                <Input maxLength={255}/>
+                {/* <Input maxLength={255}/> */}
+                {selectCategory()}
+
               </Form.Item>
               <Form.Item label='Packaging'name='packaging' hasFeedback >
                 <Input maxLength={255}/>
@@ -136,7 +144,8 @@ export default function Index() {
                   <Input maxLength={255}/>
                 </Form.Item>
                 <Form.Item label='Category'name='category' hasFeedback required rules={formRule.category} >
-                  <Input maxLength={255}/>
+                  {/* <Input maxLength={255}/> */}
+                  {selectCategory()}
                 </Form.Item>
                 <Form.Item label='Packaging'name='packaging' hasFeedback >
                   <Input maxLength={255}/>
@@ -260,20 +269,6 @@ export default function Index() {
     
   };
 
-  // const validateForm = ()=> {
-  //   let filled = false
-  //   for(var key of Object.keys(formData)) {
-  //     if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
-  //       filled = true
-  //       break
-  //     }
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   validateForm()
-  // }, [formData])
-
   const handleCancel = () => {
     console.log('Clicked cancel button');
     form.resetFields()
@@ -306,9 +301,21 @@ export default function Index() {
       })
     }
 
+  const loadCategories = () => {
+    category.listCategory(false, 0, 10, '', 'name', 'asc')
+    .then(result => {
+      if (result.result) {
+        setCategories(result.result.currentPageContent)
+      }
+    })
+    .catch(err => console.log(err))
+  }
+
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
+    loadCategories()
+
   }, [tablePagination]);
 
 
@@ -394,6 +401,23 @@ export default function Index() {
       pageSize
     })
   }
+
+  const selectCategory = () => {
+    console.log("categories = ", categories)
+    return (  
+      <Select
+        allowClear
+        showSearch
+        placeholder="Select Category"
+        filterOption={(input, option) =>
+          option.children.toLowerCase().includes(input.toLowerCase())
+        }
+      >
+        {categories.map(c => {return <Option value={c.name}>{c.name}</Option>})}
+      </Select>
+      )
+  };
+
 
   return (
     <Layout title="Item" subtitle="">
