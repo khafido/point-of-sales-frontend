@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 
-import { Button, Col, Divider, Image, Modal, notification, Popconfirm, Row, Space, Table, Tag } from 'antd';
+import { Select, Form, Button, Col, Divider, Image, Modal, notification, Popconfirm, Row, Space, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, PlusOutlined, PlusSquareOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, PlusOutlined, UsergroupAddOutlined, PlusSquareOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
 import * as user from 'api/User'
 import { useRouter } from 'next/router';
 
-  
-import { Divider, Form, Image, Modal, notification, Table, Tag, Select } from 'antd';
-import Search from 'antd/lib/input/Search';
-import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import * as user from 'api/User';
+
+// import { Divider, Form, Image, Modal, notification, Table, Tag, Select } from 'antd';
+// import Search from 'antd/lib/input/Search';
+// import Link from 'next/link';
+// import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+// import * as user from 'api/User';
 import axios from 'axios';
-  
+
 export default function Index() {
   const router = useRouter();
   const { Option } = Select;
@@ -181,9 +181,9 @@ export default function Index() {
       dataIndex: 'roles',
       render: (t, r) =>
         r.roles.map((v, k) =>
-          <div key={k}>
-            <Tag key={k} color="cyan">{v.name.replace('ROLE_', '')}</Tag>
-          </div>
+          <Space key={k}>
+            <Tag key={k} color="cyan" style={{textAlign:'center',width:'80px',marginTop:'5px'}}>{v.name.replace('ROLE_', '')}</Tag>
+          </Space>
         )
     },
     // {
@@ -229,20 +229,10 @@ export default function Index() {
           </Space>
 
           <Space>
-            {/* <Button 
-            style={ { backgroundColor: '#0d9488', color: '#fff' } }
-            key={r.id} 
-            onClick={() => assignOwner(r.id)} 
-            className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
-            <TrophyOutlined /> Assign Owner
-          </Button> */}
-            {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
-            <UsergroupAddOutlined /> Assign Manager
-          </a> */}
+            <Button style={{background:'#1e40af', color:"#fff"}} onClick={() => assignUserRoleModal(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
+              <UsergroupAddOutlined /> Assign Role
+            </Button>
           </Space>
-          <a onClick={() => assignUserRoleModal(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
-            <UsergroupAddOutlined /> Assign Role
-          </a>
         </>
     }
   ].filter(item => !item.hidden);
@@ -295,7 +285,12 @@ export default function Index() {
     axios.get('http://localhost:8080/api/v1/role')
       .then(res => {
         console.log('res', res.data.result)
-        setOptions(res.data.result)
+        let role = res.data.result;
+        // role.map(item => {
+        //   item.name = item.name.replace('ROLE_', '')
+        //   return item
+        // })
+        setOptions(role)
       })
       .catch(err => console.log(err))
   }, [])
@@ -320,6 +315,7 @@ export default function Index() {
     const editData = tableData[editIndex]
     const showed = []
     editData.roles.forEach(r => showed.push(r.name))
+    // editData.roles.forEach(r => showed.push(r.name.replace('ROLE_', '')))
     form.setFieldsValue({
       id,
       roles: showed
