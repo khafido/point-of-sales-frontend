@@ -311,16 +311,17 @@ export default function Index() {
   const assignUserRole = () => {
     console.log('data from ', formData.roles.value)
 
-    formData.roles.value.forEach(r => {
-      user.addRole(submitParam, { roles: r })
-        .then(res => {
-          console.log(res);
-          loadTableData();
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    })
+
+    user.addRole(submitParam, { roles: formData.roles.value })
+      .then(res => {
+        console.log(res);
+        loadTableData();
+      })
+      .catch(err => {
+        console.log(err)
+      })
+
+    setVisible(false)
   }
 
   return (
