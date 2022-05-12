@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
 import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select } from 'antd';
 import * as item from 'api/Item';
-import { UploadOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import * as category from 'api/Category';
 
 export default function Index() {
@@ -412,8 +412,14 @@ export default function Index() {
       render: (t, r) => (
         <Space size="middle">
           
-          <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
-          <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
+          <Button type='primary' style={{display:'flex', alignItems:'center'}} onClick={() => showModal('edit', r.id)}>
+              <EditOutlined/>
+              Edit
+          </Button>
+          <Button type='danger' style={{display:'flex', alignItems:'center'}} onClick={() => showModal('delete', r.id)}>
+              <DeleteOutlined/> 
+              Delete            
+          </Button>
         </Space>
       )
     }
