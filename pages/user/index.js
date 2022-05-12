@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Divider, Image, Modal, notification, Table, Tag } from 'antd';
+import { Button, Col, Divider, Image, Modal, notification, Popconfirm, Row, Space, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, PlusOutlined, PlusSquareOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
 import * as user from 'api/User'
+import { useRouter } from 'next/router';
 
 export default function Index() {
+  const router = useRouter();
+
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
-  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10});
+  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
   const [tableTotalPages, setTableTotalPages] = useState(0);
 
   const [searchLoading, setSearchLoading] = useState(false);
@@ -20,67 +23,69 @@ export default function Index() {
     loadTableData();
   }, []);
 
-  useEffect(()=> {
+  useEffect(() => {
     loadTableData()
     setSearchLoading(false)
   }, [tablePagination])
 
   const loadTableData = (
     searchBy = searchVal,
-    page = tablePagination.page-1, 
+    page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
-  )=> {
+  ) => {
     setTableLoading(true)
 
     user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
-    .then(result=> {
-      // console.log('result', result);
+      .then(result => {
+        // console.log('result', result);
 
-      if(result.result) {
-        let users = result.result.currentPageContent.map((item, key) => {
-          item.key = item.id;
-          item.numrow = key+1;
-          item.name = item.firstName+' '+item.lastName;
-          if (!item.photo) {
-            item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
-          };
-          return item;
-        });
+        if (result.result) {
+          let users = result.result.currentPageContent.map((item, key) => {
+            item.key = item.id;
+            item.numrow = key + 1;
+            item.name = item.firstName + ' ' + item.lastName;
+            if (!item.photo) {
+              item.photo = "https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png";
+            };
+            return item;
+          });
 
-        // const numberedData = users.map((item, index) => ({
-        //   ...item,
-        //   numrow: index + 1,
-        // }));
+          // const numberedData = users.map((item, index) => ({
+          //   ...item,
+          //   numrow: index + 1,
+          // }));
 
-        // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
+          // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
 
-        setTableData(users);
-        setTableTotalPages(result.result.totalPages);
-        setTableLoading(false);
-        setSearchLoading(false);
-      } else {
-        notification.error({
-          message: result.message? result.message : 'Error get user data',
-          duration: 0
-        });
-      }
-    })
+          setTableData(users);
+          setTableTotalPages(result.result.totalPages);
+          setTableLoading(false);
+          setSearchLoading(false);
+        } else {
+          notification.error({
+            message: result.message ? result.message : 'Error get user data',
+            duration: 0
+          });
+        }
+      })
   }
 
-  const onChangePagination = (page, pageSize)=> {
+  const onChangePagination = (page, pageSize) => {
     setTablePagination({
-      page, 
+      page,
       pageSize
     })
   }
 
-  const onSearchData = (e)=> {
-    setSearchLoading(true)
-    setSearchVal(e.target.value)
-    setTablePagination({
-      page: 1,
-      pageSize: 10
-    })
+  const onSearchData = (e) => {
+    if (e.key === 'Enter') {
+      setSearchLoading(true)
+      setSearchVal(e.target.value)
+      setTablePagination({
+        page: 1,
+        pageSize: 10
+      })
+    }
   }
 
   const columns = [
@@ -156,7 +161,7 @@ export default function Index() {
       key: 'roles',
       width: 150,
       dataIndex: 'roles',
-      render: (t, r) => 
+      render: (t, r) =>
         r.roles.map((v, k) =>
           <div key={k}>
             <Tag key={k} color="cyan">{v.name.replace('ROLE_', '')}</Tag>
@@ -180,34 +185,53 @@ export default function Index() {
       key: 'action',
       dataIndex: 'action',
       fixed: 'right',
-      width: 195,
+      width: 200,
       render: (t, r) =>
-        <div className='place-content-center'>
-          <Link href={'/user/edit/' + r.id}>
-            <a className="float-left text-center px-4 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">
+        <>
+
+          <Space>
+            <Button type='primary' onClick={() => router.push(`/user/edit/${r.id}`)}>
               <EditOutlined /> Edit
-            </a>
-          </Link>
+            </Button>
 
-          <a onClick={() => deleteUserModal(r.id, r.name)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-            <DeleteOutlined /> Delete
-          </a>
+            <Popconfirm
+              title={`Confirm to delete ${r.name}`}
+              onConfirm={(e) => {
+                deleteUser(r.id)
+              }}
+              okText="Yes"
+              okButtonProps={{ danger: true }}
+              cancelText="No"
+            >
+              <Button
+                type='danger'
+                className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
+                <DeleteOutlined /> Delete
+              </Button>
+            </Popconfirm>
+          </Space>
 
-          <a key={r.id} onClick={() => assignOwner(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
+          <Space>
+            {/* <Button 
+            style={ { backgroundColor: '#0d9488', color: '#fff' } }
+            key={r.id} 
+            onClick={() => assignOwner(r.id)} 
+            className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
             <TrophyOutlined /> Assign Owner
-          </a>
+          </Button> */}
 
-          {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
+            {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
             <UsergroupAddOutlined /> Assign Manager
           </a> */}
-        </div>
+          </Space>
+        </>
     }
   ].filter(item => !item.hidden);
 
   function onChange(pagination, filters, sorter, extra) {
     // console.log('params', pagination, filters, sorter, extra);
     let filteredData = tableData;
-    
+
     filteredData = filteredData.sort((a, b) => {
       let field = (sorter.field) ? sorter.field : 'name';
       if (sorter.order === 'ascend' || sorter.order === undefined) {
@@ -261,30 +285,37 @@ export default function Index() {
 
   return (
     <Layout title="User" subtitle="">
-      <div className='w-[200px] float-left'>
-        <Link href="/user/add">
-          <a className='text-center px-4 pb-2 pt-1 rounded-md text-white bg-green-600 hover:bg-transparent border-2 border-green-600 hover:text-green-600'>
-            <UserAddOutlined /> Add User
-          </a>
-        </Link>
-      </div>
-      <div className='w-[200px] float-right'>
-        <Search placeholder='Search' onChange={onSearchData} />
-      </div>
-      <br />
-      <br />
-      <Table className='' 
-        columns={columns} 
+      <Row justify="space-between">
+        <Col>
+          <Button
+            type="primary"
+            onClick={() => {
+              router.push('/user/add');
+            }}
+          >
+            <PlusOutlined />New User
+          </Button>
+        </Col>
+        <Col>
+          <Search
+            placeholder="Search User"
+            onKeyDown={onSearchData}
+          />
+        </Col>
+      </Row>
+      <br></br>
+      <Table className=''
+        columns={columns}
         dataSource={tableData}
         loading={tableLoading}
-        rowKey={(record)=> record.id}
+        rowKey={(record) => record.id}
         pagination={{
           onChange: onChangePagination,
           total: tableTotalPages * tablePagination.pageSize,
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
-        }} 
-        onChange={onChange} 
+        }}
+        onChange={onChange}
         scroll={{ x: 1300 }} />
     </Layout>
   )
