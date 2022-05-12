@@ -311,7 +311,6 @@ export default function Index() {
   const assignUserRole = () => {
     console.log('data from ', formData.roles.value)
 
-
     user.addRole(submitParam, { roles: formData.roles.value })
       .then(res => {
         console.log(res);
@@ -322,7 +321,6 @@ export default function Index() {
       })
 
     setVisible(false)
-
   }
 
   return (
