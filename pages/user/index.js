@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Divider, Form, Image, Modal, notification, Table, Tag, Select } from 'antd';
+
+import { Select, Form, Button, Col, Divider, Image, Modal, notification, Popconfirm, Row, Space, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import * as user from 'api/User';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, PlusOutlined, UsergroupAddOutlined, PlusSquareOutlined, TrophyOutlined, UserAddOutlined } from '@ant-design/icons';
+import * as user from 'api/User'
+import { useRouter } from 'next/router';
+
+
+// import { Divider, Form, Image, Modal, notification, Table, Tag, Select } from 'antd';
+// import Search from 'antd/lib/input/Search';
+// import Link from 'next/link';
+// import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+// import * as user from 'api/User';
 import axios from 'axios';
 
 export default function Index() {
+  const router = useRouter();
   const { Option } = Select;
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
@@ -46,7 +56,6 @@ export default function Index() {
 
     user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
       .then(result => {
-        //console.log('result', result);
 
         if (result.result) {
           let users = result.result.currentPageContent.map((item, key) => {
@@ -87,12 +96,14 @@ export default function Index() {
   }
 
   const onSearchData = (e) => {
-    setSearchLoading(true)
-    setSearchVal(e.target.value)
-    setTablePagination({
-      page: 1,
-      pageSize: 10
-    })
+    if (e.key === 'Enter') {
+      setSearchLoading(true)
+      setSearchVal(e.target.value)
+      setTablePagination({
+        page: 1,
+        pageSize: 10
+      })
+    }
   }
 
   const columns = [
@@ -170,9 +181,9 @@ export default function Index() {
       dataIndex: 'roles',
       render: (t, r) =>
         r.roles.map((v, k) =>
-          <div key={k}>
-            <Tag key={k} color="cyan">{v.name.replace('ROLE_', '')}</Tag>
-          </div>
+          <Space key={k}>
+            <Tag key={k} color="cyan" style={{textAlign:'center',width:'80px',marginTop:'5px'}}>{v.name.replace('ROLE_', '')}</Tag>
+          </Space>
         )
     },
     // {
@@ -192,27 +203,37 @@ export default function Index() {
       key: 'action',
       dataIndex: 'action',
       fixed: 'right',
-      width: 195,
+      width: 200,
       render: (t, r) =>
-        <div className='place-content-center'>
-          <Link href={'/user/edit/' + r.id}>
-            <a className="float-left text-center px-3 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">
+        <>
+          <Space>
+            <Button type='primary' onClick={() => router.push(`/user/edit/${r.id}`)}>
               <EditOutlined /> Edit
-            </a>
-          </Link>
+            </Button>
 
-          <a onClick={() => deleteUserModal(r.id, r.name)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-            <DeleteOutlined /> Delete
-          </a>
+            <Popconfirm
+              title={`Confirm to delete ${r.name}`}
+              onConfirm={(e) => {
+                deleteUser(r.id)
+              }}
+              okText="Yes"
+              okButtonProps={{ danger: true }}
+              cancelText="No"
+            >
+              <Button
+                type='danger'
+                className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
+                <DeleteOutlined /> Delete
+              </Button>
+            </Popconfirm>
+          </Space>
 
-          <a key={r.id} onClick={() => assignOwner(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
-            <TrophyOutlined /> Assign Owner
-          </a>
-
-          <a onClick={() => assignUserRoleModal(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
-            <UsergroupAddOutlined /> Assign Role
-          </a>
-        </div>
+          <Space>
+            <Button style={{background:'#1e40af', color:"#fff"}} onClick={() => assignUserRoleModal(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
+              <UsergroupAddOutlined /> Assign Role
+            </Button>
+          </Space>
+        </>
     }
   ].filter(item => !item.hidden);
 
@@ -264,7 +285,12 @@ export default function Index() {
     axios.get('http://localhost:8080/api/v1/role')
       .then(res => {
         console.log('res', res.data.result)
-        setOptions(res.data.result)
+        let role = res.data.result;
+        // role.map(item => {
+        //   item.name = item.name.replace('ROLE_', '')
+        //   return item
+        // })
+        setOptions(role)
       })
       .catch(err => console.log(err))
   }, [])
@@ -289,11 +315,11 @@ export default function Index() {
     const editData = tableData[editIndex]
     const showed = []
     editData.roles.forEach(r => showed.push(r.name))
+    // editData.roles.forEach(r => showed.push(r.name.replace('ROLE_', '')))
     form.setFieldsValue({
       id,
       roles: showed
     })
-
   }
 
 
@@ -325,18 +351,25 @@ export default function Index() {
 
   return (
     <Layout title="User" subtitle="">
-      <div className='w-[200px] float-left'>
-        <Link href="/user/add">
-          <a className='text-center px-4 pb-2 pt-1 rounded-md text-white bg-green-600 hover:bg-transparent border-2 border-green-600 hover:text-green-600'>
-            <UserAddOutlined /> Add User
-          </a>
-        </Link>
-      </div>
-      <div className='w-[200px] float-right'>
-        <Search placeholder='Search' onChange={onSearchData} />
-      </div>
-      <br />
-      <br />
+      <Row justify="space-between">
+        <Col>
+          <Button
+            type="primary"
+            onClick={() => {
+              router.push('/user/add');
+            }}
+          >
+            <PlusOutlined />New User
+          </Button>
+        </Col>
+        <Col>
+          <Search
+            placeholder="Search User"
+            onKeyDown={onSearchData}
+          />
+        </Col>
+      </Row>
+      <br></br>
       <Table className=''
         columns={columns}
         dataSource={tableData}
