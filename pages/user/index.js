@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
+
 import { Button, Col, Divider, Image, Modal, notification, Popconfirm, Row, Space, Table, Tag } from 'antd';
 import Search from 'antd/lib/input/Search';
 import Link from 'next/link';
@@ -7,9 +8,17 @@ import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, PlusOutlined, 
 import * as user from 'api/User'
 import { useRouter } from 'next/router';
 
+  
+import { Divider, Form, Image, Modal, notification, Table, Tag, Select } from 'antd';
+import Search from 'antd/lib/input/Search';
+import Link from 'next/link';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, TrophyOutlined, UserAddOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import * as user from 'api/User';
+import axios from 'axios';
+  
 export default function Index() {
   const router = useRouter();
-
+  const { Option } = Select;
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
   const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
@@ -18,6 +27,16 @@ export default function Index() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
+
+  // roles
+  const [visible, setVisible] = useState(false)
+  const [formData, setFormData] = useState({});
+  const [form] = Form.useForm();
+  const [submitParam, setSubmitParam] = useState('');
+
+  const handleCancel = () => {
+    setVisible(false);
+  }
 
   useEffect(() => {
     loadTableData();
@@ -37,7 +56,6 @@ export default function Index() {
 
     user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
       .then(result => {
-        // console.log('result', result);
 
         if (result.result) {
           let users = result.result.currentPageContent.map((item, key) => {
@@ -188,7 +206,6 @@ export default function Index() {
       width: 200,
       render: (t, r) =>
         <>
-
           <Space>
             <Button type='primary' onClick={() => router.push(`/user/edit/${r.id}`)}>
               <EditOutlined /> Edit
@@ -219,7 +236,6 @@ export default function Index() {
             className="w-full text-center px-3 pb-1 rounded-md text-white bg-teal-600 hover:bg-transparent border-2 border-teal-600 hover:bg-transparent hover:text-teal-600 inline-block mt-2">
             <TrophyOutlined /> Assign Owner
           </Button> */}
-
             {/* <a className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
             <UsergroupAddOutlined /> Assign Manager
           </a> */}
@@ -271,6 +287,43 @@ export default function Index() {
       },
     });
   }
+  const [options, setOptions] = useState([])
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/v1/role')
+      .then(res => {
+        console.log('res', res.data.result)
+        setOptions(res.data.result)
+      })
+      .catch(err => console.log(err))
+  }, [])
+
+  console.log('opt', options)
+
+  const onFieldsChange = (changedField, allFields) => {
+    let data = {}
+    allFields.forEach(element => {
+      data[`${element.name[0]}`] = {
+        value: element.value,
+        errors: element.errors
+      }
+    });
+    setFormData(data)
+  }
+
+  const assignUserRoleModal = (id) => {
+    setVisible(true);
+    setSubmitParam(id);
+    const editIndex = tableData.findIndex((element) => element.id === id)
+    const editData = tableData[editIndex]
+    const showed = []
+    editData.roles.forEach(r => showed.push(r.name))
+    form.setFieldsValue({
+      id,
+      roles: showed
+    })
+
+  }
+
 
   const deleteUser = (id) => {
     user.deleteUser(id)
@@ -281,6 +334,21 @@ export default function Index() {
       .catch(err => {
         console.log(err);
       });
+  }
+
+  const assignUserRole = () => {
+    console.log('data from ', formData.roles.value)
+
+    user.addRole(submitParam, { roles: formData.roles.value })
+      .then(res => {
+        console.log(res);
+        loadTableData();
+      })
+      .catch(err => {
+        console.log(err)
+      })
+
+    setVisible(false)
   }
 
   return (
@@ -304,6 +372,7 @@ export default function Index() {
         </Col>
       </Row>
       <br></br>
+
       <Table className=''
         columns={columns}
         dataSource={tableData}
@@ -317,6 +386,28 @@ export default function Index() {
         }}
         onChange={onChange}
         scroll={{ x: 1300 }} />
+
+      <Modal
+        title='Add roles'
+        visible={visible}
+        onOk={assignUserRole}
+        onCancel={handleCancel}
+      >
+        <div>
+          <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+            <Form.Item label='Roles' name='roles' hasFeedback >
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Please select"
+              // options={options}
+              >
+                {options.map(r => { return <Option value={r.name} key={r.id}>{r.name}</Option> })}
+              </Select>
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
     </Layout>
   )
 }

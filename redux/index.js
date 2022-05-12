@@ -18,5 +18,5 @@ const bindMiddleware = (middleware) => {
 
 export const store = configureStore({
   reducer: rootReducer, 
-  middleware: [thunkMiddleware],
+  // middleware: [thunkMiddleware],
 });
