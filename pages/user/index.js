@@ -322,6 +322,7 @@ export default function Index() {
       })
 
     setVisible(false)
+
   }
 
   return (
