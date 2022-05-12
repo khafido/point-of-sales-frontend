@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
-import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select } from 'antd';
+import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select,
+        Popconfirm } from 'antd';
 import * as item from 'api/Item';
-import { UploadOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { UploadOutlined, CloseOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import * as category from 'api/Category';
 
 export default function Index() {
@@ -117,7 +118,6 @@ export default function Index() {
         case 'edit':
           const editIndex = tableData.findIndex((element)=> element.id === id)
           const editData = tableData[editIndex]
-          console.log("edit data = ", editData)
           form.setFieldsValue({
             id,
             name: editData.name,
@@ -126,7 +126,8 @@ export default function Index() {
             category: editData.category,
             packaging: editData.packaging,
           })
-          setModalTitle('Edit Item')
+          setModalTitle('Edit Item') 
+          console.log("edit data = ", editData)         
           setModalBody((
             <div>
               <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
@@ -138,10 +139,9 @@ export default function Index() {
                       accept="image/png, image/jpeg"
                       listType="picture"
                       maxCount={1}
-                      defaultFileList={(editData.image)? [{thumbUrl: editData.image}]: []}
-
+                      defaultFileList={(editData.image && editData.image != defaultImage)? [{name:editData.name, thumbUrl:editData.image}]: []}
                   >
-                      <Button>{<UploadOutlined />}Upload Photo</Button>
+                      <Button icon={<UploadOutlined />}>Upload Photo</Button>
                   </Upload>
                 </Form.Item>
                 <Form.Item label='Barcode'name='barcode' hasFeedback rules={formRule.barcode} >
@@ -159,8 +159,8 @@ export default function Index() {
           break
         case 'delete':
           const deleteIndex = tableData.findIndex((element)=> element.id === id)
-        const deleteData = tableData[deleteIndex]
-        
+          const deleteData = tableData[deleteIndex]
+          
         setModalTitle('Delete Item')
         setModalBody((
           `Are you sure want to delete Item ${deleteData.name}?`
@@ -191,7 +191,7 @@ export default function Index() {
     console.log("data = ", data)
     setFormData(data)
   }
-  
+
   const normFile = (e) => {
     // console.log("e = ", e)
     // console.log("e array = ", Array.isArray(e))
@@ -298,7 +298,7 @@ export default function Index() {
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
-    form.resetFields()
+    form.resetFields();
     setVisible(false);
   }
 
@@ -345,6 +345,12 @@ export default function Index() {
 
   }, [tablePagination, sortBy, sortDir]);
 
+  // useEffect(() => {
+  //   if(submitParam.type == 'edit'){
+  //     setVisible(false)
+  //     showModal(submitParam.type, submitParam.id)
+  //   }
+  // }), [sortBy]
 
   const columns = [
     {
@@ -397,33 +403,39 @@ export default function Index() {
       dataIndex: 'action',
       fixed: 'right',
       width: 195,
-      // render: (t, r) =>
-      //   <div className='place-content-center'>
-      //     <Link href={'/user/edit/' + r.id}>
-      //       <a className="float-left text-center px-4 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">
-      //         <EditOutlined /> Edit
-      //       </a>
-      //     </Link>
-      //     <a onClick={() => deleteUserModal(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-      //       <DeleteOutlined /> Delete
-      //     </a>
-      //   </div>
       
       render: (t, r) => (
-        <Space size="middle">
-          
-          <Button type='primary' style={{display:'flex', alignItems:'center'}} onClick={() => showModal('edit', r.id)}>
-              <EditOutlined/>
+        <Space size="small">
+          <Button 
+            type='primary' 
+            icon={<EditOutlined/>} 
+            onClick={() => {
+              form.resetFields();
+              setVisible(false);
+              showModal('edit', r.id);
+            }}
+            >
               Edit
           </Button>
-          <Button type='danger' style={{display:'flex', alignItems:'center'}} onClick={() => showModal('delete', r.id)}>
-              <DeleteOutlined/> 
-              Delete            
-          </Button>
+          
+					<Popconfirm
+						title={`Confirm to delete ${r.name}`}
+						onConfirm={(e) => {
+              handleOk()
+						}}
+						okText="Yes"
+						okButtonProps={{ primary: true }}
+						cancelText="No"
+					>
+            <Button type='danger' icon={<DeleteOutlined/>} onClick={() => setSubmitParam({type:'delete', id:r.id})}>
+                Delete            
+            </Button>
+					</Popconfirm>
         </Space>
       )
     }
   ].filter(item => !item.hidden);
+
 
   const onChangePagination = (page, pageSize)=> {
     setTablePagination({
@@ -459,10 +471,10 @@ export default function Index() {
     <Layout title="Item" subtitle="">
       <Row>
         <Col span={6}>
-        <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
+        <Search placeholder='Search Item' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Item</Button>
+          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')} icon={<PlusOutlined/>}> Add Item</Button>
         </Col>
       </Row>
       <br />
