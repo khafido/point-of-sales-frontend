@@ -240,6 +240,9 @@ export default function Index() {
             <UsergroupAddOutlined /> Assign Manager
           </a> */}
           </Space>
+          <a onClick={() => assignUserRoleModal(r.id)} className="w-full text-center px-3 pb-1 rounded-md text-white bg-blue-800 hover:bg-transparent border-2 border-blue-800 hover:bg-transparent hover:text-blue-800 inline-block mt-3">
+            <UsergroupAddOutlined /> Assign Role
+          </a>
         </>
     }
   ].filter(item => !item.hidden);
@@ -321,7 +324,6 @@ export default function Index() {
       id,
       roles: showed
     })
-
   }
 
 
@@ -372,7 +374,6 @@ export default function Index() {
         </Col>
       </Row>
       <br></br>
-
       <Table className=''
         columns={columns}
         dataSource={tableData}
