@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
 import { Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Popconfirm } from 'antd';
 import * as category from 'api/Category';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 
 export default function Index() {
   const [form] = Form.useForm()
@@ -19,10 +19,13 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
 
   // state for table and filter search
-  const [searchVal, setSearchVal] = useState('')
+  const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
-  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 })
-  const [tableTotalPages, setTableTotalPages] = useState(0)
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState('');
+  const [sortDir, setSortDir] = useState('');
+  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
+  const [tableTotalPages, setTableTotalPages] = useState(0);
 
   const onSearchData = (value, e) => {
     setSearchLoading(true)
@@ -178,7 +181,7 @@ export default function Index() {
     pageSize = tablePagination.pageSize,) => {
     setTableLoading(true)
     console.log(searchBy)
-    category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
+    category.listCategory(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result => {
         if (result.result) {
           setTableData(result.result.currentPageContent)
@@ -196,7 +199,7 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-  }, [tablePagination]);
+  }, [searchVal, page, sortBy, sortDir]);
 
   const columns = [
     {
@@ -248,7 +251,11 @@ export default function Index() {
       pageSize
     })
   }
-
+  const onSortAndPagination = (pagination, sorter) => {
+    setSortBy(sorter.field)
+    setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
+    setPage(pagination.current)
+  }
   return (
     <Layout title="Category" subtitle="">
       <Row>
@@ -256,7 +263,7 @@ export default function Index() {
           <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type='primary' style={{ float: 'right' }} onClick={() => showModal('add')}>+ Add Category</Button>
+          <Button type='primary' icon={<PlusOutlined />} style={{ float: 'right' }} onClick={() => showModal('add')}>Add Category</Button>
         </Col>
       </Row>
       <br />
@@ -270,6 +277,9 @@ export default function Index() {
           total: tableTotalPages * tablePagination.pageSize,
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
+        }}
+        onChange={(pagination, filter, sorter) => {
+          onSortAndPagination(pagination, sorter)
         }}
 
       />

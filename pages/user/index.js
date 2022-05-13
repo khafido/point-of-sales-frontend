@@ -351,9 +351,16 @@ export default function Index() {
 
   return (
     <Layout title="User" subtitle="">
-      <Row justify="space-between">
-        <Col>
+      <Row>
+        <Col span={6}>
+          <Search
+            placeholder="Search User"
+            onKeyDown={onSearchData}
+          />
+        </Col>
+        <Col span={18}>
           <Button
+            style={{float:'right'}} 
             type="primary"
             onClick={() => {
               router.push('/user/add');
@@ -361,12 +368,6 @@ export default function Index() {
           >
             <PlusOutlined />New User
           </Button>
-        </Col>
-        <Col>
-          <Search
-            placeholder="Search User"
-            onKeyDown={onSearchData}
-          />
         </Col>
       </Row>
       <br></br>
