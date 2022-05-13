@@ -506,7 +506,7 @@ export default function Index() {
 	return (
 		<Layout title="Store" subtitle="">
 			<Row justify="space-between">
-				<Col>
+				<Col span={6}>
 					<Search
 						placeholder="Search store"
 						onSearch={onSearch}
