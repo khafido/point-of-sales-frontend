@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Button, Col, Row, Space, Table, Input, Modal, Form, notification } from 'antd';
+import { Button, Col, Row, Space, Table, Input, Modal, Form, notification, Popconfirm } from 'antd';
 import * as supplier from 'api/Supplier'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { Search } = Input
 
@@ -26,6 +27,9 @@ export default function Index() {
   const [tableData, setTableData] = useState([])
   const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
   const [tableTotalPages, setTableTotalPages] = useState(0)
+
+  const [tableSortBy, setTableSortBy] = useState('name')
+  const [tableSortDir, setTableSortDir] = useState('ASC')
 
   const showModal = (type, id) => {
     setSubmitParam({type, id})
@@ -242,9 +246,11 @@ export default function Index() {
     searchBy = searchVal,
     page = tablePagination.page-1, 
     pageSize = tablePagination.pageSize,
+    sortBy = tableSortBy,
+    sortDir = tableSortDir
   )=> {
     setTableLoading(true)
-    supplier.listSuppliers(true, page, pageSize, searchBy, 'name', 'ASC')
+    supplier.listSuppliers(true, page, pageSize, searchBy, sortBy, sortDir)
     .then(result=> {
       if(result.result) {
         setTableData(result.result.currentPageContent)
@@ -259,6 +265,12 @@ export default function Index() {
     })
   }
 
+  const onTableSort = (sorter) => {
+		setTableSortBy(sorter.field)
+		setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC')
+		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+	}
+
   useEffect(()=> {
     validateForm()
   }, [formData])
@@ -266,23 +278,26 @@ export default function Index() {
   useEffect(()=> {
     loadTableData()
     setSearchLoading(false)
-  }, [tablePagination])
+  }, [tablePagination, tableSortBy, tableSortDir])
 
   const columns = [
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      sorter: (a, b) => null
     },
     {
       title: 'Contact Person',
       dataIndex: 'cpname',
-      key: 'cpname'
+      key: 'cpname',
+      sorter: (a, b) => null
     },
     {
       title: 'Email',
       dataIndex: 'email',
-      key: 'email'
+      key: 'email',
+      sorter: (a, b) => null
     },
     {
       title: 'Phone',
@@ -299,8 +314,23 @@ export default function Index() {
       key: 'action',
       render: (text, record, index)=> (
         <Space size="middle">
-          <a onClick={()=> showModal('edit', record.id)}>Edit</a>
-          <a onClick={()=> showModal('delete', record.id)}>Delete</a>
+          <Button type='primary' icon={<EditOutlined/>}  onClick={()=> showModal('edit', record.id)}>Edit</Button>
+
+          <Popconfirm
+						title={`Confirm to delete ${record.name}`}
+						onConfirm={(e) => {
+              console.log(submitParam)
+              handleModalSubmit()
+						}}
+						okText="Yes"
+						okButtonProps={{ type: 'danger', loading: submitLoading }}
+						cancelText="No"
+					>
+            <Button type='danger' icon={<DeleteOutlined/>} onClick={()=>{
+              setSubmitParam({type: 'delete', id: record.id})}}>
+                Delete            
+            </Button>
+					</Popconfirm>
         </Space>
       )
     }
@@ -313,7 +343,7 @@ export default function Index() {
           <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading}/>
         </Col>
         <Col span={18}>
-          <Button type="primary" style={{float: 'right'}} onClick={()=> showModal('add')}>+ Add New</Button>
+          <Button type="primary" icon={<PlusOutlined />} style={{float: 'right'}} onClick={()=> showModal('add')}>Add New</Button>
         </Col>
       </Row>
       <br />
@@ -328,6 +358,9 @@ export default function Index() {
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
         }}
+        onChange={(pagination, filter, sorter) => {
+					onTableSort(sorter)
+				}}
       />
 
       <Modal
