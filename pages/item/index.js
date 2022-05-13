@@ -445,7 +445,7 @@ export default function Index() {
               handleOk()
 						}}
 						okText="Yes"
-						okButtonProps={{}}
+						okButtonProps={{ type: 'danger' }}
 						cancelText="No"
 					>
             <Button type='danger' icon={<DeleteOutlined/>} onClick={() => setSubmitParam({type:'delete', id:r.id})}>
