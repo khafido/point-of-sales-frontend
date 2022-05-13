@@ -275,7 +275,7 @@ export default function UserForm({ action, userData, userId }) {
                                 label="Phone"
                                 rules={formRule.phone}
                             >
-                                <Input addonBefore="+62" placeholder="Phone" />
+                                <Input placeholder="Phone" />
                             </Form.Item>
                         </Col>
                         <Col className='md:ml-4 lg:ml-4'>
