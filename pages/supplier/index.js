@@ -49,7 +49,7 @@ export default function Index() {
               <Form.Item label='Email' name='email' hasFeedback required rules={[{required: true, type:'email', message: 'Please input supplier email'}]}>
                 <Input maxLength={255} type='email' />
               </Form.Item>
-              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, message: 'Please input supplier phone number'}]}>
+              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number'}]}>
                 <Input maxLength={255} type='tel' />
               </Form.Item>
               <Form.Item label='Address' name='address' hasFeedback required rules={[{required: true, message: 'Please input supplier address'}]}>
@@ -92,7 +92,7 @@ export default function Index() {
               <Form.Item label='Email' name='email' hasFeedback required rules={[{required: true, type:'email', message: 'Please input supplier email'}]}>
                 <Input maxLength={255} type='email' />
               </Form.Item>
-              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, message: 'Please input supplier phone number'}]}>
+              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number'}]}>
                 <Input maxLength={255} type='tel' />
               </Form.Item>
               <Form.Item label='Address' name='address' hasFeedback required rules={[{required: true, message: 'Please input supplier address'}]}>
