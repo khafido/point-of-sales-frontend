@@ -67,9 +67,18 @@ export async function deleteItem(id){
         .catch(err => console.log(err))
 }
 
-export async function checkBarcodeExist(barcode){
+export async function checkBarcodeOnAdd(barcode){
     return apiClient
-        .get(`${url}/check-barcode`, {params: {barcode}})
+        .get(`${url}/check-barcode-add`, {params: {barcode}})
+        .then(response => {
+            return response.data
+        })
+        .catch(err => console.log(err))
+}
+
+export async function checkBarcodeOnEdit(id, barcode){
+    return apiClient
+        .get(`${url}/check-barcode-update/${id}`, {params: {barcode}})
         .then(response => {
             return response.data
         })
