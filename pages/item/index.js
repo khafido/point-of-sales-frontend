@@ -22,6 +22,9 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
     
   const [categories, setCategories] = useState([])
+  const [formEdited, setFormEdited] = useState(false)
+  const editType = useRef('')
+  const editId = useRef(0)
 
   // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
@@ -61,14 +64,28 @@ export default function Index() {
     barcode:[
       {
         validator: async (rule, value) => {
-          let status = await item.checkBarcodeExist(value).then(res => {
+          // console.log("check id = ", editId.current, " barcode = ", value)
+          // console.log("check type = ", editType.current)
+        
+          let status
+          if (editType.current == 'add') {
+            status = await item.checkBarcodeOnAdd(value).then(res => {
               return res;
-          });
-          console.log('barcode', status);
-          if (status) {
-              return Promise.reject('Barcode is already exist');
+            });
           }
-          return Promise.resolve();
+          else if (editType.current == 'edit') {
+            status = await item.checkBarcodeOnEdit(editId.current, value).then(res => {
+              return res;
+            });
+          }
+          
+        // console.log('barcode exist = ', status);
+
+        if (status) {
+            return Promise.reject('Barcode already exists');
+        }
+        return Promise.resolve();
+          
         }
       }
     ],
@@ -85,10 +102,13 @@ export default function Index() {
     setSubmitParam({type, id})
     switch(type){
       case 'add':
+        editType.current = type    
+        console.log("OPEN ADD")
+
         setModalTitle('Add New Item')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} onValuesChange={() => setFormEdited(true)} form={form}>
               <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255}/>
               </Form.Item>
@@ -116,6 +136,10 @@ export default function Index() {
         ))
         break
         case 'edit':
+          editType.current = type
+          editId.current = id
+          console.log("OPEN EDIT") 
+
           const editIndex = tableData.findIndex((element)=> element.id === id)
           const editData = tableData[editIndex]
           form.setFieldsValue({
@@ -127,10 +151,10 @@ export default function Index() {
             packaging: editData.packaging,
           })
           setModalTitle('Edit Item') 
-          console.log("edit data = ", editData)         
+          // console.log("edit data = ", editData)         
           setModalBody((
             <div>
-              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} onValuesChange={() => setFormEdited(true)} form={form}>
                 <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                   <Input maxLength={255}/>
                 </Form.Item>
@@ -171,7 +195,7 @@ export default function Index() {
   };
 
   const onFieldsChange = (changedField, allFields)=> {
-    console.log("all fields = ", allFields)
+    // console.log("all fields = ", allFields)
     let data = {}
     let val = ""
     allFields.forEach((element, index) => {
@@ -188,7 +212,7 @@ export default function Index() {
       }
 
     });
-    console.log("data = ", data)
+    // console.log("on fields change data = ", data)
     setFormData(data)
   }
 
@@ -207,6 +231,7 @@ export default function Index() {
     setConfirmLoading(true);
     switch(submitParam.type){
       case 'add':
+        console.log("form data = ", formData)
         let img
         if (formData.image.value === undefined) {
           img = null
@@ -232,6 +257,7 @@ export default function Index() {
           } 
           form.resetFields()
           loadTableData()
+          setFormEdited(false)
         })
         .catch(err => {
           console.log(err)
@@ -239,6 +265,8 @@ export default function Index() {
         })
       break
       case 'edit':
+        console.log("form data = ", formData)
+
         if (typeof(formData.image.value) == "string") {
           img = formData.image.value
         }
@@ -267,6 +295,7 @@ export default function Index() {
           } 
           loadTableData()
           form.resetFields()
+          setFormEdited(false)
       })
       .catch(err => {
         console.log(err)
@@ -307,7 +336,7 @@ export default function Index() {
     page = tablePagination.page-1, 
     pageSize = tablePagination.pageSize,) => {
       setTableLoading(true)
-      console.log(searchBy)
+      // console.log(searchBy)
       item.listItems(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result=> {
         if(result.result) {
@@ -343,14 +372,7 @@ export default function Index() {
     setSearchLoading(false)
     loadCategories()
 
-  }, [tablePagination, sortBy, sortDir]);
-
-  // useEffect(() => {
-  //   if(submitParam.type == 'edit'){
-  //     setVisible(false)
-  //     showModal(submitParam.type, submitParam.id)
-  //   }
-  // }), [sortBy]
+  }, [tablePagination, sortBy, sortDir, formData]);
 
   const columns = [
     {
@@ -411,7 +433,6 @@ export default function Index() {
             icon={<EditOutlined/>} 
             onClick={() => {
               form.resetFields();
-              setVisible(false);
               showModal('edit', r.id);
             }}
             >
@@ -424,7 +445,7 @@ export default function Index() {
               handleOk()
 						}}
 						okText="Yes"
-						okButtonProps={{ primary: true }}
+						okButtonProps={{}}
 						cancelText="No"
 					>
             <Button type='danger' icon={<DeleteOutlined/>} onClick={() => setSubmitParam({type:'delete', id:r.id})}>
@@ -451,7 +472,7 @@ export default function Index() {
 	}
 
   const selectCategory = () => {
-    console.log("categories = ", categories)
+    // console.log("categories = ", categories)
     return (  
       <Select
         allowClear
@@ -461,7 +482,7 @@ export default function Index() {
           option.children.toLowerCase().includes(input.toLowerCase())
         }
       >
-        {categories.map(c => {return <Option value={c.name}>{c.name}</Option>})}
+        {categories.map(c => {return <Option key={c.id} value={c.name}>{c.name}</Option>})}
       </Select>
       )
   };
@@ -496,7 +517,18 @@ export default function Index() {
         <Modal
           title={modalTitle}
           visible={visible}
-          onOk={handleOk}
+          okButtonProps={{disabled: !formEdited}}
+          onOk={() => {
+            form
+              .validateFields()
+              .then(() => {
+                handleOk()
+                form.resetFields()
+              })
+              .catch((info) => {
+                console.log('Validate Failed:', info)
+              })
+          }}
           confirmLoading={confirmLoading}
           onCancel={handleCancel}
         >
