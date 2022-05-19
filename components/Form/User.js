@@ -221,6 +221,7 @@ export default function UserForm({ action, userData, userId }) {
                                 name="username"
                                 label="Username"
                                 rules={(action=='Add')?formRule.username:[]}
+                                hasFeedback
                             >
                                 <Input disabled={(action=='Add')?false:true} placeholder="Username" />
                             </Form.Item>
@@ -230,6 +231,7 @@ export default function UserForm({ action, userData, userId }) {
                                 name="email"
                                 label="Email"
                                 rules={(action=='Add')?formRule.email:[]}
+                                hasFeedback
                             >
                                 <Input disabled={(action=='Add')?false:true} placeholder="Email" />
                             </Form.Item>
@@ -241,6 +243,7 @@ export default function UserForm({ action, userData, userId }) {
                                 name="firstName"
                                 label="First Name"
                                 rules={formRule.firstName}
+                                hasFeedback
                             >
                                 <Input placeholder="Firstname" />
                             </Form.Item>
@@ -250,6 +253,7 @@ export default function UserForm({ action, userData, userId }) {
                                 name="lastName"
                                 label="Last Name"
                                 rules={formRule.lastName}
+                                hasFeedback
                             >
                                 <Input placeholder="Lastname" />
                             </Form.Item>

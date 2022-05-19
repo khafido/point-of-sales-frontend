@@ -284,7 +284,7 @@ export default function Index() {
   useEffect(() => {
     axios.get('http://localhost:8080/api/v1/role')
       .then(res => {
-        console.log('res', res.data.result)
+        // console.log('res', res.data.result)
         let role = res.data.result;
         // role.map(item => {
         //   item.name = item.name.replace('ROLE_', '')
@@ -295,7 +295,7 @@ export default function Index() {
       .catch(err => console.log(err))
   }, [])
 
-  console.log('opt', options)
+  // console.log('opt', options)
 
   const onFieldsChange = (changedField, allFields) => {
     let data = {}
