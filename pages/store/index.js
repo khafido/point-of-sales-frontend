@@ -23,6 +23,7 @@ import Layout from '@components/Layout'
 import {
 	DeleteOutlined,
 	EditOutlined,
+	PlusOutlined,
 	UserAddOutlined,
 	UserOutlined,
 	UserSwitchOutlined,
@@ -57,7 +58,7 @@ export default function Index() {
 	const [loading, setLoading] = useState(true)
 	const [loadingSelectManager, setLoadingSelectManager] = useState(true)
 	const [loadingSubmitManager, setLoadingSubmitManager] = useState(false)
-	const [roleManagerData , setRoleManagerData] = useState(null)
+	const [roleManagerData, setRoleManagerData] = useState(null)
 
 	const [page, setPage] = useState(1)
 	const [pageSize, setPageSize] = useState(10)
@@ -72,7 +73,7 @@ export default function Index() {
 
 	useEffect(() => {
 		fetchStore()
-	}, [serachValue, page, sortBy, sortDir])
+	}, [serachValue, page, sortBy, sortDir, pageSize])
 
 	useEffect(() => {
 		fetchManager()
@@ -105,21 +106,22 @@ export default function Index() {
 	}
 
 	const fetchManager = () => {
-		role.getRoleById(3)
-		.then(result=> {
-			console.log(result.result)
-			setRoleManagerData(result.result)
-			setLoadingSelectManager(false)
-		})
-		.catch((err) => {
-			if (err) {
-				console.log(err)
-				notification.error({
-					message: 'Failed to load list of manager',
-					duration: 0
-				})
-			}
-		})
+		role
+			.getRoleById(3)
+			.then((result) => {
+				console.log(result.result)
+				setRoleManagerData(result.result)
+				setLoadingSelectManager(false)
+			})
+			.catch((err) => {
+				if (err) {
+					console.log(err)
+					notification.error({
+						message: 'Failed to load list of manager',
+						duration: 0,
+					})
+				}
+			})
 	}
 
 	const onSave = (value) => {
@@ -195,11 +197,13 @@ export default function Index() {
 		console.log('Showing Detail Store : ', store.id)
 	}
 
-	const onAssignManager  = (data) => {
+	const onAssignManager = (data) => {
 		assignManagerForm.setFieldsValue({
 			storeId: data.id,
 			storeName: data.name,
-			currentManager: data.manager? `${data.manager.firstName} ${data.manager.lastName}` : '-'
+			currentManager: data.manager
+				? `${data.manager.firstName} ${data.manager.lastName}`
+				: '-',
 		})
 		setVisibleAssignManager(true)
 	}
@@ -209,6 +213,11 @@ export default function Index() {
 		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
 		setPage(pagination.current)
 		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+	}
+
+	const onSizeChange = (current, size) => {
+		setPageSize(size)
+		setPage(current)
 	}
 
 	const StoreForm = () => {
@@ -276,30 +285,34 @@ export default function Index() {
 			key: 'action',
 			width: '20%',
 			render: (text, record) => (
-				<Space split={<Divider type="vertical" />}>
+				<Space direction="horizontal">
 					<Button
 						icon={<UserSwitchOutlined />}
 						title="Assign Manager"
-						size="large"
 						onClick={(e) => {
 							onAssignManager(record)
 						}}
-					></Button>
+					>
+						Assign
+					</Button>
 					<Button
 						icon={<UserOutlined />}
-						size="large"
 						onClick={(e) => {
 							onShowDetailStore(record)
 						}}
-					></Button>
+					>
+						Detail
+					</Button>
 					<Button
 						icon={<EditOutlined />}
-						size="large"
 						onClick={(e) => {
 							console.log(record)
 							onEdit(record)
 						}}
-					></Button>
+						type="primary"
+					>
+						Edit
+					</Button>
 					<Popconfirm
 						title={`Confirm to delete ${record.name}`}
 						onConfirm={(e) => {
@@ -309,11 +322,9 @@ export default function Index() {
 						okButtonProps={{ danger: true }}
 						cancelText="No"
 					>
-						<Button
-							icon={<DeleteOutlined />}
-							danger
-							size="large"
-						></Button>
+						<Button icon={<DeleteOutlined />} type="primary" danger>
+							Delete
+						</Button>
 					</Popconfirm>
 				</Space>
 			),
@@ -406,31 +417,30 @@ export default function Index() {
 		)
 	}
 
-	const AssignManagerModal = ()=> {
+	const AssignManagerModal = () => {
 		return (
 			<Modal
 				visible={visibleAssignManager}
-				title='Assign Manager'
-				onCancel={()=> setVisibleAssignManager(false)}
-				onOk={()=> {
-					assignManagerForm.validateFields()
-					.then(value=> {
+				title="Assign Manager"
+				onCancel={() => setVisibleAssignManager(false)}
+				onOk={() => {
+					assignManagerForm.validateFields().then((value) => {
 						setLoadingSubmitManager(true)
 						assignManager({
 							storeId: value.storeId,
-							userId: value.manager
-						}).then(result=> {
+							userId: value.manager,
+						}).then((result) => {
 							setVisibleAssignManager(false)
 							setLoadingSubmitManager(false)
-							if(result.status === 'SUCCESS') {
+							if (result.status === 'SUCCESS') {
 								notification.success({
 									message: result.message,
-									duration: 3
+									duration: 3,
 								})
 							} else {
 								notification.error({
 									message: result.status,
-									description: result.message
+									description: result.message,
 								})
 							}
 							assignManagerForm.resetFields()
@@ -440,58 +450,52 @@ export default function Index() {
 					})
 				}}
 			>
-				<Form
-					form={assignManagerForm}
-					layout='vertical'
-				>
-					<Form.Item
-						label="Store ID"
-						name="storeId"
-						hidden
-					>
+				<Form form={assignManagerForm} layout="vertical">
+					<Form.Item label="Store ID" name="storeId" hidden>
 						<Input readOnly />
 					</Form.Item>
-					<Form.Item
-						label="Store Name"
-						name="storeName"
-					>
+					<Form.Item label="Store Name" name="storeName">
 						<Input readOnly />
 					</Form.Item>
-					<Form.Item
-						label="Current Manager"
-						name="currentManager"
-					>
-						<Input  readOnly/>
+					<Form.Item label="Current Manager" name="currentManager">
+						<Input readOnly />
 					</Form.Item>
 					<Form.Item
 						label="Assign New Manager"
 						name="manager"
-						rules={[{ required: true, message: 'Please select new manager' }]}
+						rules={[
+							{ required: true, message: 'Please select new manager' },
+						]}
 					>
 						<Select
 							showSearch
 							loading={loadingSelectManager}
 							filterOption={(input, option) =>
-								option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+								option.children
+									.toLowerCase()
+									.indexOf(input.toLowerCase()) >= 0
 							}
 							filterSort={(optionA, optionB) =>
-								optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+								optionA.children
+									.toLowerCase()
+									.localeCompare(optionB.children.toLowerCase())
 							}
 						>
-							{roleManagerData? roleManagerData.users.map(item=> {
-								return <Select.Option 
-									value={item.id} 
-									key={item.id} 
-									disabled={item.managerAt}
-								>
-									{item.managerAt? 
-										`${item.firstName} ${item.lastName} (Manager at ${item.managerAt.name})` 
-										: 
-										`${item.firstName} ${item.lastName}`
-									}
-								</Select.Option>
-							}) : null}
-							
+							{roleManagerData
+								? roleManagerData.users.map((item) => {
+										return (
+											<Select.Option
+												value={item.id}
+												key={item.id}
+												disabled={item.managerAt}
+											>
+												{item.managerAt
+													? `${item.firstName} ${item.lastName} (Manager at ${item.managerAt.name})`
+													: `${item.firstName} ${item.lastName}`}
+											</Select.Option>
+										)
+								  })
+								: null}
 						</Select>
 					</Form.Item>
 				</Form>
@@ -502,6 +506,15 @@ export default function Index() {
 	return (
 		<Layout title="Store" subtitle="">
 			<Row justify="space-between">
+				<Col span={6}>
+					<Search
+						placeholder="Search store"
+						onSearch={onSearch}
+						// onChange={(e) => {
+						// 	onSearch(e.target.value)
+						// }}
+					/>
+				</Col>
 				<Col>
 					<Button
 						type="primary"
@@ -509,19 +522,10 @@ export default function Index() {
 							setMode('Create')
 							setVisible(true)
 						}}
+						icon={<PlusOutlined />}
 					>
 						New store
 					</Button>
-				</Col>
-				<Col>
-					<Search
-						placeholder="Search store"
-						// onSearch={onSearch}
-						onChange={(e) => {
-							onSearch(e.target.value)
-						}}
-						enterButton
-					/>
 				</Col>
 			</Row>
 			<br></br>
@@ -534,6 +538,8 @@ export default function Index() {
 					current: page,
 					pageSize: pageSize,
 					total: totalPage,
+					showSizeChanger: true,
+					onShowSizeChange: onSizeChange,
 					onChange: (pageVal) => {
 						setPage(pageVal)
 					},
