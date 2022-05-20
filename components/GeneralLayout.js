@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { logout } from 'redux/slices/auth';
-import { Button, Dropdown, Image, Layout, Menu, PageHeader } from 'antd';
+import { Button, Divider, Dropdown, Image, Layout, Menu, Modal, PageHeader } from 'antd';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -12,6 +12,7 @@ import SideMenu from './SideMenu';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { removeUser } from 'redux/slices/user';
+import ChangePasswordModal from './Modal/ChangePassword';
 
 const { Header, Sider, Content } = Layout;
 
@@ -19,32 +20,9 @@ export default function GeneralLayout(props) {
     const dispatch = useDispatch();
     const router = useRouter();
 
+    const [visible, setVisible] = useState(false);
+
     const [collapsed, setCollapsed] = useState(true);
-    // const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
-
-    // useEffect(() => {
-    //     function handleResize() {
-    //         setWindowDimensions(getWindowDimensions());
-    //     }
-    //     if(windowDimensions.width < 400){
-    //         setCollapsed(true);
-    //     }
-    // }, [windowDimensions]);
-
-
-    // function getWindowDimensions() {
-    //     if (typeof window !== 'undefined') {
-    //         return {
-    //             width: window.innerWidth,
-    //             height: window.innerHeight,
-    //         };
-    //     }
-    //     const { innerWidth: width, innerHeight: height } = window;
-    //     return {
-    //         width,
-    //         height
-    //     };
-    // }
 
     const toggle = () => {
         setCollapsed(!collapsed);
@@ -58,14 +36,38 @@ export default function GeneralLayout(props) {
         router.push('/login');
     }
 
-    const userMenu = (
-        <Menu style={{ width:'150px' }}>
-            <Menu.Item key="1">Profile</Menu.Item>
-            <Menu.Item key="2">Change Password</Menu.Item>
-            <Menu.Divider />
-            <Menu.Item key="3" onClick={() => doLogout()}>Logout</Menu.Item>
-        </Menu>
-    );
+    const showModalChangePassword = () => {
+        setVisible(true);
+    }
+
+    const handleCancel = () => {
+        setVisible(false);
+    }
+
+    function getItem(label, key, type) {
+        return {
+            label,
+            key,
+            type,
+        };
+    }
+
+    const userMenu = [
+        getItem("Profile", "profile"),
+        getItem("Change Password", "change-password"),
+        getItem("menu-divider", "menu-divider", "divider"),
+        getItem("Logout", "logout")
+    ];
+
+    const handleMenuClick = (e) => {
+        if (e.key === "logout") {
+            doLogout();
+        } else if (e.key === "change-password") {
+            showModalChangePassword();
+        } else if (e.key === "profile") {
+            router.push('/profile');
+        }
+    }
 
     return (
         <Layout>
@@ -87,7 +89,9 @@ export default function GeneralLayout(props) {
                     <Dropdown.Button
                         style={{ float: 'right', marginRight: '12px', marginTop: '17px' }}
                         className="dropdown-btn"
-                        overlay={userMenu}
+                        overlay={
+                            <Menu onClick={handleMenuClick} style={{ width:'150px' }} items={userMenu} />
+                        }
                         icon={
                             <UserOutlined
                                 style={{
@@ -106,6 +110,10 @@ export default function GeneralLayout(props) {
                             subTitle={props.subTitle}
                         />
                         {props.content}
+                        <ChangePasswordModal 
+                            visible={visible}
+                            onCancel={handleCancel}
+                        />
                     </Content>
                 </Layout>
             </Layout>

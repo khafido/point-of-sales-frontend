@@ -89,6 +89,9 @@ export default function Login() {
                                     required: true,
                                     message: 'Please input your Password!',
                                 },
+                                {
+                                    min: 6,
+                                }
                             ]}
                             hasFeedback
                         >
