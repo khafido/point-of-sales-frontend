@@ -40,3 +40,7 @@
   .dropdown-btn > .ant-dropdown-trigger > span {
     background-color: white !important;
   }
+
+  .ant-btn .anticon {
+    display: inline-flex;
+  }

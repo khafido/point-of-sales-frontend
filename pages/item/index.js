@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
-import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select } from 'antd';
+import { Image, Upload, Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Select,
+        Popconfirm } from 'antd';
 import * as item from 'api/Item';
-import { UploadOutlined, CloseOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, CloseOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import * as category from 'api/Category';
 
 export default function Index() {
@@ -21,6 +22,9 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
     
   const [categories, setCategories] = useState([])
+  const [formEdited, setFormEdited] = useState(false)
+  const editType = useRef('')
+  const editId = useRef(0)
 
   // state for table and filter search
   const [searchVal, setSearchVal] = useState('')
@@ -60,14 +64,28 @@ export default function Index() {
     barcode:[
       {
         validator: async (rule, value) => {
-          let status = await item.checkBarcodeExist(value).then(res => {
+          // console.log("check id = ", editId.current, " barcode = ", value)
+          // console.log("check type = ", editType.current)
+        
+          let status
+          if (editType.current == 'add') {
+            status = await item.checkBarcodeOnAdd(value).then(res => {
               return res;
-          });
-          console.log('barcode', status);
-          if (status) {
-              return Promise.reject('Barcode is already exist');
+            });
           }
-          return Promise.resolve();
+          else if (editType.current == 'edit') {
+            status = await item.checkBarcodeOnEdit(editId.current, value).then(res => {
+              return res;
+            });
+          }
+          
+        // console.log('barcode exist = ', status);
+
+        if (status) {
+            return Promise.reject('Barcode already exists');
+        }
+        return Promise.resolve();
+          
         }
       }
     ],
@@ -84,10 +102,13 @@ export default function Index() {
     setSubmitParam({type, id})
     switch(type){
       case 'add':
+        editType.current = type    
+        console.log("OPEN ADD")
+
         setModalTitle('Add New Item')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} onValuesChange={() => setFormEdited(true)} form={form}>
               <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255}/>
               </Form.Item>
@@ -115,9 +136,12 @@ export default function Index() {
         ))
         break
         case 'edit':
+          editType.current = type
+          editId.current = id
+          console.log("OPEN EDIT") 
+
           const editIndex = tableData.findIndex((element)=> element.id === id)
           const editData = tableData[editIndex]
-          console.log("edit data = ", editData)
           form.setFieldsValue({
             id,
             name: editData.name,
@@ -126,10 +150,11 @@ export default function Index() {
             category: editData.category,
             packaging: editData.packaging,
           })
-          setModalTitle('Edit Item')
+          setModalTitle('Edit Item') 
+          // console.log("edit data = ", editData)         
           setModalBody((
             <div>
-              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange}  form={form}>
+              <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} onValuesChange={() => setFormEdited(true)} form={form}>
                 <Form.Item label='Name'name='name' hasFeedback required rules={formRule.name} >
                   <Input maxLength={255}/>
                 </Form.Item>
@@ -138,10 +163,9 @@ export default function Index() {
                       accept="image/png, image/jpeg"
                       listType="picture"
                       maxCount={1}
-                      defaultFileList={(editData.image)? [{thumbUrl: editData.image}]: []}
-
+                      defaultFileList={(editData.image && editData.image != defaultImage)? [{name:editData.name, thumbUrl:editData.image}]: []}
                   >
-                      <Button>{<UploadOutlined />}Upload Photo</Button>
+                      <Button icon={<UploadOutlined />}>Upload Photo</Button>
                   </Upload>
                 </Form.Item>
                 <Form.Item label='Barcode'name='barcode' hasFeedback rules={formRule.barcode} >
@@ -159,8 +183,8 @@ export default function Index() {
           break
         case 'delete':
           const deleteIndex = tableData.findIndex((element)=> element.id === id)
-        const deleteData = tableData[deleteIndex]
-        
+          const deleteData = tableData[deleteIndex]
+          
         setModalTitle('Delete Item')
         setModalBody((
           `Are you sure want to delete Item ${deleteData.name}?`
@@ -171,7 +195,7 @@ export default function Index() {
   };
 
   const onFieldsChange = (changedField, allFields)=> {
-    console.log("all fields = ", allFields)
+    // console.log("all fields = ", allFields)
     let data = {}
     let val = ""
     allFields.forEach((element, index) => {
@@ -188,10 +212,10 @@ export default function Index() {
       }
 
     });
-    console.log("data = ", data)
+    // console.log("on fields change data = ", data)
     setFormData(data)
   }
-  
+
   const normFile = (e) => {
     // console.log("e = ", e)
     // console.log("e array = ", Array.isArray(e))
@@ -207,6 +231,7 @@ export default function Index() {
     setConfirmLoading(true);
     switch(submitParam.type){
       case 'add':
+        console.log("form data = ", formData)
         let img
         if (formData.image.value === undefined) {
           img = null
@@ -232,6 +257,7 @@ export default function Index() {
           } 
           form.resetFields()
           loadTableData()
+          setFormEdited(false)
         })
         .catch(err => {
           console.log(err)
@@ -239,6 +265,8 @@ export default function Index() {
         })
       break
       case 'edit':
+        console.log("form data = ", formData)
+
         if (typeof(formData.image.value) == "string") {
           img = formData.image.value
         }
@@ -267,6 +295,7 @@ export default function Index() {
           } 
           loadTableData()
           form.resetFields()
+          setFormEdited(false)
       })
       .catch(err => {
         console.log(err)
@@ -298,7 +327,7 @@ export default function Index() {
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
-    form.resetFields()
+    form.resetFields();
     setVisible(false);
   }
 
@@ -307,7 +336,7 @@ export default function Index() {
     page = tablePagination.page-1, 
     pageSize = tablePagination.pageSize,) => {
       setTableLoading(true)
-      console.log(searchBy)
+      // console.log(searchBy)
       item.listItems(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result=> {
         if(result.result) {
@@ -343,8 +372,7 @@ export default function Index() {
     setSearchLoading(false)
     loadCategories()
 
-  }, [tablePagination, sortBy, sortDir]);
-
+  }, [tablePagination, sortBy, sortDir, formData]);
 
   const columns = [
     {
@@ -397,27 +425,38 @@ export default function Index() {
       dataIndex: 'action',
       fixed: 'right',
       width: 195,
-      // render: (t, r) =>
-      //   <div className='place-content-center'>
-      //     <Link href={'/user/edit/' + r.id}>
-      //       <a className="float-left text-center px-4 pb-1 rounded-md text-white bg-blue-600 hover:bg-transparent border-2 border-blue-600 hover:text-blue-600">
-      //         <EditOutlined /> Edit
-      //       </a>
-      //     </Link>
-      //     <a onClick={() => deleteUserModal(r.id)} className="float-right inline px-3 pb-1 rounded-md text-white bg-red-800 hover:bg-transparent border-2 border-red-800 hover:text-red-800">
-      //       <DeleteOutlined /> Delete
-      //     </a>
-      //   </div>
       
       render: (t, r) => (
-        <Space size="middle">
+        <Space size="small">
+          <Button 
+            type='primary' 
+            icon={<EditOutlined/>} 
+            onClick={() => {
+              form.resetFields();
+              showModal('edit', r.id);
+            }}
+            >
+              Edit
+          </Button>
           
-          <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
-          <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
+					<Popconfirm
+						title={`Confirm to delete ${r.name}`}
+						onConfirm={(e) => {
+              handleOk()
+						}}
+						okText="Yes"
+						okButtonProps={{ type: 'danger' }}
+						cancelText="No"
+					>
+            <Button type='danger' icon={<DeleteOutlined/>} onClick={() => setSubmitParam({type:'delete', id:r.id})}>
+                Delete            
+            </Button>
+					</Popconfirm>
         </Space>
       )
     }
   ].filter(item => !item.hidden);
+
 
   const onChangePagination = (page, pageSize)=> {
     setTablePagination({
@@ -433,7 +472,7 @@ export default function Index() {
 	}
 
   const selectCategory = () => {
-    console.log("categories = ", categories)
+    // console.log("categories = ", categories)
     return (  
       <Select
         allowClear
@@ -443,7 +482,7 @@ export default function Index() {
           option.children.toLowerCase().includes(input.toLowerCase())
         }
       >
-        {categories.map(c => {return <Option value={c.name}>{c.name}</Option>})}
+        {categories.map(c => {return <Option key={c.id} value={c.name}>{c.name}</Option>})}
       </Select>
       )
   };
@@ -453,10 +492,10 @@ export default function Index() {
     <Layout title="Item" subtitle="">
       <Row>
         <Col span={6}>
-        <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
+        <Search placeholder='Search Item' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')}>+ Add Item</Button>
+          <Button type='primary' style={{float:'right'}} onClick={() => showModal('add')} icon={<PlusOutlined/>}> Add Item</Button>
         </Col>
       </Row>
       <br />
@@ -478,7 +517,18 @@ export default function Index() {
         <Modal
           title={modalTitle}
           visible={visible}
-          onOk={handleOk}
+          okButtonProps={{disabled: !formEdited}}
+          onOk={() => {
+            form
+              .validateFields()
+              .then(() => {
+                handleOk()
+                form.resetFields()
+              })
+              .catch((info) => {
+                console.log('Validate Failed:', info)
+              })
+          }}
           confirmLoading={confirmLoading}
           onCancel={handleCancel}
         >

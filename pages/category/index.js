@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
 import Search from 'antd/lib/input/Search';
-import { Button, Col, Row, Form, Input, Modal, notification, Table, message, Space } from 'antd';
+import { Button, Col, Row, Form, Input, Modal, notification, Table, message, Space, Popconfirm } from 'antd';
 import * as category from 'api/Category';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 
 export default function Index() {
   const [form] = Form.useForm()
@@ -11,7 +12,6 @@ export default function Index() {
   const [visible, setVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState((<div></div>));
-  const [formData, setFormData] = useState({});
   const [submitParam, setSubmitParam] = useState({ type: '', id: '' })
 
   const [searchLoading, setSearchLoading] = useState(false)
@@ -19,10 +19,13 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
 
   // state for table and filter search
-  const [searchVal, setSearchVal] = useState('')
+  const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
-  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 })
-  const [tableTotalPages, setTableTotalPages] = useState(0)
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState('');
+  const [sortDir, setSortDir] = useState('');
+  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
+  const [tableTotalPages, setTableTotalPages] = useState(0);
 
   const onSearchData = (value, e) => {
     setSearchLoading(true)
@@ -45,7 +48,7 @@ export default function Index() {
             return res;
           });
           console.log('category', status);
-          if (status && value.length > 6) {
+          if (status) {
             return Promise.reject('Category already exist');
           }
           return Promise.resolve();
@@ -62,7 +65,7 @@ export default function Index() {
         setModalTitle('Add New Category')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+            <Form layout='vertical' autoComplete='off' form={form}>
               <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255} />
               </Form.Item>
@@ -80,7 +83,7 @@ export default function Index() {
         setModalTitle('Edit Category')
         setModalBody((
           <div>
-            <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
+            <Form layout='vertical' autoComplete='off' form={form}>
               <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name} >
                 <Input maxLength={255} />
               </Form.Item>
@@ -101,26 +104,11 @@ export default function Index() {
     }
   };
 
-  const onFieldsChange = (changedField, allFields) => {
-    console.log(allFields)
-    let data = {}
-    allFields.forEach(element => {
-      data[`${element.name[0]}`] = {
-        value: element.value,
-        errors: element.errors
-      }
-    });
-    console.log(data)
-    setFormData(data)
-  }
-
-  const handleOk = () => {
+  const handleOk = (value) => {
     setConfirmLoading(true);
     switch (submitParam.type) {
       case 'add':
-        category.addCategory({
-          name: formData.name.value
-        })
+        category.addCategory(value)
           .then(result => {
             setVisible(false);
             setConfirmLoading(false);
@@ -130,18 +118,18 @@ export default function Index() {
                 duration: 3
               })
             }
+          })
+          .catch(err => {
+            console.log(err)
+            message.error(err.message)
+          })
+          .finally(() => {
             form.resetFields()
             loadTableData()
           })
-          .catch(err => {
-            console.log(err)
-            message.error(err.message)
-          })
         break
       case 'edit':
-        category.updateCategory(submitParam.id, {
-          name: formData.name.value
-        })
+        category.updateCategory(submitParam.id, value)
           .then(result => {
             setVisible(false);
             setConfirmLoading(false);
@@ -156,30 +144,30 @@ export default function Index() {
           .catch(err => {
             console.log(err)
             message.error(err.message)
-          })
-        break
-      case 'delete':
-        category.deleteCategory(submitParam.id)
-          .then(result => {
-            setVisible(false);
-            setConfirmLoading(false);
-            if (result.status === 'SUCCESS') {
-              notification.success({
-                message: result.message,
-                duration: 3
-              })
-            } else {
-              notification.error({
-                message: result.status,
-                description: result.message
-              })
-            }
-            loadTableData()
           })
         break
     }
-
   };
+
+  const onDelete = (id) => {
+    category.deleteCategory(id)
+      .then(result => {
+        setVisible(false);
+        setConfirmLoading(false);
+        if (result.status === 'SUCCESS') {
+          notification.success({
+            message: result.message,
+            duration: 3
+          })
+        } else {
+          notification.error({
+            message: result.status,
+            description: result.message
+          })
+        }
+        loadTableData()
+      })
+  }
 
   const handleCancel = () => {
     console.log('Clicked cancel button');
@@ -193,7 +181,7 @@ export default function Index() {
     pageSize = tablePagination.pageSize,) => {
     setTableLoading(true)
     console.log(searchBy)
-    category.listCategory(true, page, pageSize, searchBy, 'name', 'asc')
+    category.listCategory(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result => {
         if (result.result) {
           setTableData(result.result.currentPageContent)
@@ -211,7 +199,7 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-  }, [tablePagination]);
+  }, [searchVal, page, sortBy, sortDir]);
 
   const columns = [
     {
@@ -240,8 +228,18 @@ export default function Index() {
       render: (t, r) => (
         <Space size="middle">
 
-          <Button type='primary' onClick={() => showModal('edit', r.id)}>Edit</Button>
-          <Button type='danger' onClick={() => showModal('delete', r.id)}>Delete</Button>
+          <Button type='primary' icon={<EditOutlined />} onClick={() => showModal('edit', r.id)}>Edit</Button>
+          <Popconfirm
+            title={`Confirm to delete ${r.name}`}
+            onConfirm={(e) => {
+              onDelete(r.id)
+            }}
+            okText="Yes"
+            okButtonProps={{ danger: true }}
+            cancelText="No"
+          >
+            <Button type='danger' icon={<DeleteOutlined />}>Delete</Button>
+          </Popconfirm>
         </Space>
       )
     }
@@ -253,7 +251,11 @@ export default function Index() {
       pageSize
     })
   }
-
+  const onSortAndPagination = (pagination, sorter) => {
+    setSortBy(sorter.field)
+    setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
+    setPage(pagination.current)
+  }
   return (
     <Layout title="Category" subtitle="">
       <Row>
@@ -261,7 +263,7 @@ export default function Index() {
           <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type='primary' style={{ float: 'right' }} onClick={() => showModal('add')}>+ Add Category</Button>
+          <Button type='primary' icon={<PlusOutlined />} style={{ float: 'right' }} onClick={() => showModal('add')}>Add Category</Button>
         </Col>
       </Row>
       <br />
@@ -276,12 +278,25 @@ export default function Index() {
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
         }}
+        onChange={(pagination, filter, sorter) => {
+          onSortAndPagination(pagination, sorter)
+        }}
 
       />
       <Modal
         title={modalTitle}
         visible={visible}
-        onOk={handleOk}
+        onOk={() => {
+          form
+            .validateFields()
+            .then((values) => {
+              form.resetFields()
+              handleOk(values)
+            })
+            .catch((info) => {
+              console.log('Validate Failed:', info)
+            })
+        }}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
