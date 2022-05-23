@@ -13,7 +13,10 @@ const Detail = () => {
 	const [loading, setLoading] = useState({ store: true, employee: true })
 
 	useEffect(() => {
-		if (storeId) fetchStore()
+		if (storeId) {
+			fetchStore()
+			fetchEmployee()
+		}
 	}, [storeId])
 
 	const fetchStore = () => {
@@ -29,14 +32,17 @@ const Detail = () => {
 						res.data.result.manager.lastName
 					setStore([store])
 				}
-				setLoading({ ...loading, store: false })
 			})
 			.catch((err) => {
 				if (err) {
 					console.log(err)
 					message.error(err.response.data.message)
 				}
-				setLoading(false)
+			})
+			.finally(() => {
+				setLoading((curr) => {
+					return { ...curr, store: false }
+				})
 			})
 	}
 
@@ -44,22 +50,34 @@ const Detail = () => {
 		api.getEmployeeById(storeId)
 			.then((res) => {
 				if (res) {
-					// const stores = res.data.result.map((val) => {
-					// 	return { ...val, key: val.id }
-					// })
-					// setStoreData(stores)
+					const employees = res.data.result.currentPageContent.map(
+						(val) => {
+							return {
+								...val,
+								key: val.id,
+								photo: !val.user.photo
+									? 'https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png'
+									: val.user.photo,
+								name: val.user.firstName + ' ' + val.user.lastName,
+							}
+						}
+					)
+					setEmployee(employees)
 					// setPage(res.data.result.currentPage + 1)
 					// setTotalPage(res.data.result.totalPages * pageSize)
 					// console.log('Total page fetched', res.data.result.totalPages)
 				}
-				setLoading({ ...loading, employee: false })
 			})
 			.catch((err) => {
 				if (err) {
 					console.log(err)
 					message.error(err.response.data.message)
 				}
-				setLoading(false)
+			})
+			.finally(() => {
+				setLoading((curr) => {
+					return { ...curr, employee: false }
+				})
 			})
 	}
 

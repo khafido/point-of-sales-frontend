@@ -81,7 +81,7 @@ const StoreDetail = ({ store, employee, loading }) => {
 			key: 'roles',
 			dataIndex: 'roles',
 			render: (t, r) =>
-				r.roles.map((v, k) => (
+				r.user.roles.map((v, k) => (
 					<Space key={k}>
 						<Tag
 							key={k}
@@ -129,15 +129,18 @@ const StoreDetail = ({ store, employee, loading }) => {
 			<Table
 				columns={storeColumns}
 				dataSource={store}
+				pagination={false}
 				loading={loading.store}
 			></Table>
+
+			<br />
 			<Divider orientation="left" orientationMargin={0}>
 				Employees
 			</Divider>
 			<Row justify="space-between">
 				<Col span={6}>
 					<Search
-						placeholder="Search store"
+						placeholder="Search employee"
 						onSearch={onSearch}
 						// onChange={(e) => {
 						// 	onSearch(e.target.value)
@@ -157,7 +160,8 @@ const StoreDetail = ({ store, employee, loading }) => {
 					</Button>
 				</Col>
 			</Row>
-			<Table columns={employeeColumns}></Table>
+			<br />
+			<Table columns={employeeColumns} dataSource={employee}></Table>
 		</>
 	)
 }
