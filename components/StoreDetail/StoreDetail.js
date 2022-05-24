@@ -10,8 +10,10 @@ import {
 	Table,
 	Tag,
 	Input,
+	message,
 } from 'antd'
-import { useState } from 'react'
+import * as api from 'api/Store'
+import { useEffect, useState } from 'react'
 const { Search } = Input
 
 //nanti role si user ambil setelah dia login
@@ -20,12 +22,115 @@ const Role = {
 	owner: 'ROLE_OWNER',
 }
 
-const StoreDetail = ({ store, employee, loading }) => {
+const StoreDetail = ({ storeId }) => {
+	const [store, setStore] = useState(null)
+	const [employee, setEmployee] = useState(null)
+	const [loading, setLoading] = useState({ store: true, employee: true })
+
+	const [page, setPage] = useState(1)
+	const [pageSize, setPageSize] = useState(10)
+	const [serachValue, setSearchValue] = useState('')
+	const [sortBy, setSortBy] = useState('')
+	const [sortDir, setSortDir] = useState('')
+	const [totalPage, setTotalPage] = useState(1)
+
+	useEffect(() => {
+		if (storeId) {
+			fetchStore()
+			fetchEmployee()
+		}
+	}, [storeId, serachValue, page, sortBy, sortDir, pageSize])
+
+	const fetchStore = () => {
+		api.getById(storeId)
+			.then((res) => {
+				if (res) {
+					const store = res.data.result
+					store.key = res.data.result.id
+					store.totalEmployee = '-'
+					store.manager = store.manager
+						? res.data.result.manager.firstName +
+						  ' ' +
+						  res.data.result.manager.lastName
+						: '-'
+					setStore([store])
+				}
+			})
+			.catch((err) => {
+				if (err) {
+					console.log(err)
+					message.error(err.response.data.message)
+				}
+			})
+			.finally(() => {
+				setLoading((curr) => {
+					return { ...curr, store: false }
+				})
+			})
+	}
+
+	const fetchEmployee = () => {
+		let pg = page - 1
+		api.getEmployeeById(
+			storeId,
+			true,
+			pg,
+			pageSize,
+			serachValue,
+			sortBy,
+			sortDir
+		)
+			.then((res) => {
+				if (res) {
+					const employees = res.data.result.currentPageContent.map(
+						(val) => {
+							return {
+								...val,
+								key: val.id,
+								photo: !val.user.photo
+									? 'https://www.nicepng.com/png/detail/933-9332131_profile-picture-default-png.png'
+									: val.user.photo,
+								name: val.user.firstName + ' ' + val.user.lastName,
+							}
+						}
+					)
+					setEmployee(employees)
+					setPage(res.data.result.currentPage + 1)
+					setTotalPage(res.data.result.totalPages * pageSize)
+				}
+			})
+			.catch((err) => {
+				if (err) {
+					console.log(err)
+					message.error(err.response.data.message)
+				}
+			})
+			.finally(() => {
+				setLoading((curr) => {
+					return { ...curr, employee: false }
+				})
+			})
+	}
+
+	const onSortAndPagination = (pagination, sorter) => {
+		// setSortBy(sorter.field)
+		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
+		setPage(pagination.current)
+		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+	}
+
 	const onRemoveEmployee = (id) => {
 		//id == StoreEmployeeId
 	}
 
-	const onSearch = (value) => {}
+	const onSearch = (value) => {
+		setSearchValue(value)
+	}
+
+	const onSizeChange = (current, size) => {
+		setPageSize(size)
+		setPage(current)
+	}
 
 	const storeColumns = [
 		{
@@ -161,7 +266,24 @@ const StoreDetail = ({ store, employee, loading }) => {
 				</Col>
 			</Row>
 			<br />
-			<Table columns={employeeColumns} dataSource={employee}></Table>
+			<Table
+				columns={employeeColumns}
+				dataSource={employee}
+				pagination={{
+					defaultCurrent: 1,
+					current: page,
+					pageSize: pageSize,
+					total: totalPage,
+					showSizeChanger: true,
+					onShowSizeChange: onSizeChange,
+					onChange: (pageVal) => {
+						setPage(pageVal)
+					},
+				}}
+				onChange={(pagination, filter, sorter) => {
+					onSortAndPagination(pagination, sorter)
+				}}
+			></Table>
 		</>
 	)
 }

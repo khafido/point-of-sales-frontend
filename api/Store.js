@@ -52,6 +52,23 @@ export async function assignManager({ storeId, userId }) {
 		.catch((err) => console.log(err))
 }
 
-export async function getEmployeeById(storeId) {
-	return apiClient.get(`${url}/${storeId}/employee`)
+export async function getEmployeeById(
+	storeId,
+	isPaginated,
+	page,
+	size,
+	searchValue,
+	sortBy,
+	sortDirection
+) {
+	return apiClient.get(`${url}/${storeId}/employee`, {
+		params: {
+			isPaginated,
+			page,
+			size,
+			searchValue,
+			sortBy,
+			sortDirection,
+		},
+	})
 }
