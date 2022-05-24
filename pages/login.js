@@ -37,8 +37,13 @@ export default function Login() {
                 cookie.set('id', result.user.id);
                 cookie.set('username', result.user.username);
                 cookie.set('email', result.user.email);
-                cookie.set('store_id_employee', result.storeIdEmployee);
-                cookie.set('store_id_manager', result.storeIdManager);
+                if (result.storeIdEmployee) {
+                    cookie.set('store_id_employee', result.storeIdEmployee);
+                }
+                                    
+                if (result.storeIdManager) {                                
+                    cookie.set('store_id_manager', result.storeIdManager);
+                }
                 
                 const roles = result.user.roles.map(role => role.name.slice(5));
                 cookie.set('roles', JSON.stringify(roles));
