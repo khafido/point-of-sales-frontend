@@ -175,8 +175,6 @@ export default function UserForm({ action, userData, userId }) {
 
         // console.log('req', e);
         if (action === 'Add' || action === undefined) {
-            console.log('create');
-            console.log('create');
             user.addUser(req).then(res => {
                 // console.log(res);
                 message.success('Success Create User');
