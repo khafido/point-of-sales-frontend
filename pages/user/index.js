@@ -95,15 +95,13 @@ export default function Index() {
     })
   }
 
-  const onSearchData = (e) => {
-    if (e.key === 'Enter') {
-      setSearchLoading(true)
-      setSearchVal(e.target.value)
-      setTablePagination({
-        page: 1,
-        pageSize: 10
-      })
-    }
+  const onSearchData = (value) => {
+    setSearchLoading(true)
+    setSearchVal(value)
+    setTablePagination({
+      page: 1,
+      pageSize: 10
+    })
   }
 
   const columns = [
@@ -355,7 +353,7 @@ export default function Index() {
         <Col span={6}>
           <Search
             placeholder="Search User"
-            onKeyDown={onSearchData}
+            onSearch={onSearchData}
           />
         </Col>
         <Col span={18}>
