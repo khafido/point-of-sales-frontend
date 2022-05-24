@@ -122,7 +122,7 @@ export default function Index() {
       title: 'Name',
       key: 'name',
       dataIndex: 'name',
-      fixed: 'left',
+      // fixed: 'left',
       width: 100,
       sorter: {
         compare: (a, b) => a.name - b.name,
@@ -200,7 +200,7 @@ export default function Index() {
       title: 'Action',
       key: 'action',
       dataIndex: 'action',
-      fixed: 'right',
+      // fixed: 'right',
       width: 200,
       render: (t, r) =>
         <>

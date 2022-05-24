@@ -32,14 +32,14 @@ export default function Index() {
   useEffect(() => {
     storeAPI.listStoreItems(jsCookie.get('store_id_employee'), false, 1, 10000000, null, 'name', 'asc').then(res => {
       // console.log(res);
-      if (res.status == "SUCCESS") {
+      if (res && res.status == "SUCCESS") {
         setStoreItems(res.result.currentPageContent);
       }
     });
 
     supplierAPI.listSuppliers(false, 1, 10000000, null, 'name', 'asc').then(res => {
       // console.log(res);
-      if (res.status == "SUCCESS") {
+      if (res && res.status == "SUCCESS") {
         setSupplier(res.result.currentPageContent);
       }
     });
