@@ -85,3 +85,24 @@ export async function checkBarcodeOnEdit(id, barcode){
         })
         .catch(err => console.log(err))
 }
+
+
+export async function addStock(req){
+    return apiClient
+        .post(`${url}/stock/`, req, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+        })
+        .then(response => {
+            if(response){
+                return response.data
+            }
+            return false
+        })
+        .catch(err => console.log(err))
+}
