@@ -4,13 +4,14 @@ import { Button, Col, Descriptions, Divider, Form, Image, Input, Modal, notifica
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import * as store from 'api/Store'
 import * as item from 'api/Item'
+import jsCookie from 'js-cookie';
 import Search from 'antd/lib/input/Search';
 
 export default function Index() {
 
   const [form] = Form.useForm()
 
-  const [currentStoreId, setCurrentStoreId] = useState('2ccd86d8-91c9-4295-b4c0-a40dc8b190a4')
+  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee'))
   const [storeData, setStoreData] = useState(null)
 
   const [searchLoading, setSearchLoading] = useState(false)
