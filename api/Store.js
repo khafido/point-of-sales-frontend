@@ -1,4 +1,5 @@
 import apiClient from 'api'
+import jsCookie from 'js-cookie'
 
 const url = '/store'
 

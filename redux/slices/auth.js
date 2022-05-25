@@ -20,6 +20,9 @@ const authSlice = createSlice({
             jsCookie.remove("id");
             jsCookie.remove("username");
             jsCookie.remove("email");
+            jsCookie.remove("roles");
+            jsCookie.remove("store_id_employee");
+            jsCookie.remove("store_id_manager");
         },
         login_error: (state, action) => {
             state.error = action.payload;

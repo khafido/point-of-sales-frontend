@@ -2,7 +2,7 @@ import apiClient from "api";
 
 const url = '/item'
 
-export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection){
+export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection, fullInformation = true){
     return apiClient
         .get(url, {
             params: {
@@ -11,7 +11,8 @@ export async function listItems(isPaginated, page, size, searchValue, sortBy, so
                 size,
                 searchValue,
                 sortBy,
-                sortDirection
+                sortDirection,
+                fullInformation
         }})
         .then(response => {
             if(response){
@@ -81,6 +82,27 @@ export async function checkBarcodeOnEdit(id, barcode){
         .get(`${url}/check-barcode-update/${id}`, {params: {barcode}})
         .then(response => {
             return response.data
+        })
+        .catch(err => console.log(err))
+}
+
+
+export async function addStock(req){
+    return apiClient
+        .post(`${url}/stock/`, req, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+        })
+        .then(response => {
+            if(response){
+                return response.data
+            }
+            return false
         })
         .catch(err => console.log(err))
 }

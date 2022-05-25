@@ -106,8 +106,7 @@ export default function Index() {
 	}
 
 	const fetchManager = () => {
-		role
-			.getRoleById(3)
+		role.getRoleById(3)
 			.then((result) => {
 				console.log(result.result)
 				setRoleManagerData(result.result)
@@ -336,10 +335,8 @@ export default function Index() {
 				onOk={() => {
 					assignManagerForm.validateFields().then((value) => {
 						setLoadingSubmitManager(true)
-						assignManager({
-							storeId: value.storeId,
-							userId: value.manager,
-						}).then((result) => {
+						assignManager(value.storeId, value.manager)
+						.then((result) => {
 							setVisibleAssignManager(false)
 							setLoadingSubmitManager(false)
 							if (result.status === 'SUCCESS') {

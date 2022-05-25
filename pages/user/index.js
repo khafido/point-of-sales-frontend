@@ -95,15 +95,13 @@ export default function Index() {
     })
   }
 
-  const onSearchData = (e) => {
-    if (e.key === 'Enter') {
-      setSearchLoading(true)
-      setSearchVal(e.target.value)
-      setTablePagination({
-        page: 1,
-        pageSize: 10
-      })
-    }
+  const onSearchData = (value) => {
+    setSearchLoading(true)
+    setSearchVal(value)
+    setTablePagination({
+      page: 1,
+      pageSize: 10
+    })
   }
 
   const columns = [
@@ -124,7 +122,7 @@ export default function Index() {
       title: 'Name',
       key: 'name',
       dataIndex: 'name',
-      fixed: 'left',
+      // fixed: 'left',
       width: 100,
       sorter: {
         compare: (a, b) => a.name - b.name,
@@ -202,7 +200,7 @@ export default function Index() {
       title: 'Action',
       key: 'action',
       dataIndex: 'action',
-      fixed: 'right',
+      // fixed: 'right',
       width: 200,
       render: (t, r) =>
         <>
@@ -355,7 +353,7 @@ export default function Index() {
         <Col span={6}>
           <Search
             placeholder="Search User"
-            onKeyDown={onSearchData}
+            onSearch={onSearchData}
           />
         </Col>
         <Col span={18}>
