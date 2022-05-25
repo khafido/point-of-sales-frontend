@@ -109,7 +109,7 @@ export async function addStock(req) {
 
 export async function getIncomingItem(isPaginated, page, size, search, sortBy, sortDirection, start, end) {
     return apiClient
-        .get(`${url}/stock/`, {
+        .get(`${url}/stock`, {
             params: {
                 isPaginated,
                 page,

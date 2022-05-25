@@ -14,9 +14,7 @@ export default function Index() {
   const auth = useSelector((state) => state.auth);
 
   const { RangePicker } = DatePicker
-  const [dateRange, setDateRange] = useState([moment(), moment()]);
-  const customDate = moment().add(0, 'days');
-  const [currentDate, setCurrentDate] = useState(moment(customDate, "YYYY-MM-DD"));
+  const [dateRange, setDateRange] = useState([moment().subtract(1, 'days'), moment()]);
 
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
@@ -105,12 +103,11 @@ export default function Index() {
     searchBy = searchVal,
     page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
-    // startDate = dateRange[0],
-    // endDate = dateRange[1]
+    startDate = new Date(dateRange[0]),
+    endDate = new Date(dateRange[1])
   ) => {
+    console.log('exp', new Date(dateRange[0]))
     setTableLoading(true)
-    console.log('s', dateRange[0])
-    console.log('e', dateRange[1])
     itemAPI.getIncomingItem(true, page, pageSize, searchBy, sortBy, sortDir, startDate, endDate)
       .then(result => {
         if (result.result) {
