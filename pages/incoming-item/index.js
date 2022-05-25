@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Table } from 'antd';
+import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Table, Space } from 'antd';
 import Search from 'antd/lib/input/Search';
 import { PlusOutlined } from '@ant-design/icons';
 import * as storeAPI from 'api/Store';
@@ -12,6 +12,11 @@ import jsCookie from 'js-cookie';
 
 export default function Index() {
   const auth = useSelector((state) => state.auth);
+
+  const { RangePicker } = DatePicker
+  const [dateRange, setDateRange] = useState([moment(), moment()]);
+  const customDate = moment().add(0, 'days');
+  const [currentDate, setCurrentDate] = useState(moment(customDate, "YYYY-MM-DD"));
 
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
@@ -99,12 +104,22 @@ export default function Index() {
   const loadTableData = (
     searchBy = searchVal,
     page = tablePagination.page - 1,
-    pageSize = tablePagination.pageSize) => {
+    pageSize = tablePagination.pageSize,
+    // startDate = dateRange[0],
+    // endDate = dateRange[1]
+  ) => {
     setTableLoading(true)
+    console.log('s', dateRange[0])
+    console.log('e', dateRange[1])
     itemAPI.getIncomingItem(true, page, pageSize, searchBy, sortBy, sortDir, startDate, endDate)
       .then(result => {
         if (result.result) {
-          setTableData(result.result.currentPageContent)
+          let res = result.result.currentPageContent
+          res.map(e => {
+            let date = moment(new Date(e.buyDate))
+            e.buyDate = date.format("YYYY-MM-DD")
+          })
+          setTableData(res)
           setTableTotalPages(result.result.totalPages)
           setTableLoading(false)
         } else {
@@ -119,8 +134,10 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-    console.log("search", searchVal)
-  }, [searchVal, page, sortBy, sortDir, startDate, endDate])
+    console.log("start", dateRange[0])
+    console.log("end", dateRange[1])
+
+  }, [searchVal, page, sortBy, sortDir, dateRange])
 
   const columns = [
     {
@@ -208,6 +225,14 @@ export default function Index() {
             onSearch={onSearchData}
             loading={searchLoading}
           />
+        </Col>
+        <Col>
+          <Space>
+            Select Buy Date:
+            <RangePicker
+              onChange={(x) => setDateRange(x)}
+            />
+          </Space>
         </Col>
         {auth.isAuthenticated && JSON.parse(jsCookie.get('roles')).includes('STOCKIST') ?
           <Col>
