@@ -72,3 +72,7 @@ export async function getEmployeeById(
 		},
 	})
 }
+
+export async function adddEmployee(employee) {
+	return apiClient.post(`${url}/add-employee`, employee)
+}

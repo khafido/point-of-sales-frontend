@@ -122,6 +122,24 @@ const StoreDetail = ({ storeId }) => {
 	}
 
 	const onSave = (value) => {
+		const reqData = {
+			storeId: storeId,
+			userId: value.userId,
+		}
+		api.adddEmployee(reqData)
+			.then((res) => {
+				if (res) {
+					message.success(res.data.message)
+					fetchStore()
+					fetchEmployee()
+				}
+			})
+			.catch((err) => {
+				if (err) {
+					message.error(err.response.data.message)
+				}
+			})
+			.finally(() => {})
 		// if (mode == 'Create') {
 		// 	create(value)
 		// 		.then((res) => {
