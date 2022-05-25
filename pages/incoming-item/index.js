@@ -30,7 +30,7 @@ export default function Index() {
   const [supplier, setSupplier] = useState([]);
 
   useEffect(() => {
-    storeAPI.listStoreItems(jsCookie.get('store_id_employee'), false, 1, 10000000, null, 'name', 'asc').then(res => {
+    storeAPI.storeListOfItems(jsCookie.get('store_id_employee'), false, 1, 10000000, null, 'name', 'asc').then(res => {
       // console.log(res);
       if (res && res.status == "SUCCESS") {
         setStoreItems(res.result.currentPageContent);

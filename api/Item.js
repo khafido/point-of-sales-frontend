@@ -2,7 +2,7 @@ import apiClient from "api";
 
 const url = '/item'
 
-export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection){
+export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection, fullInformation = true){
     return apiClient
         .get(url, {
             params: {
@@ -11,7 +11,8 @@ export async function listItems(isPaginated, page, size, searchValue, sortBy, so
                 size,
                 searchValue,
                 sortBy,
-                sortDirection
+                sortDirection,
+                fullInformation
         }})
         .then(response => {
             if(response){
