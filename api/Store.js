@@ -23,7 +23,7 @@ export async function getAll(
 	})
 }
 
-export async function getById(storeId) {
+export async function getByStoreId(storeId) {
 	return apiClient.get(`${url}/${storeId}`)
 }
 
@@ -39,10 +39,72 @@ export async function remove(id) {
 	return apiClient.delete(`${url}/${id}`)
 }
 
-export async function assignManager({ storeId, userId }) {
+export async function assignManager(storeId, userId) {
 	return apiClient
 		.post(`${url}/${storeId}/manager`, {
 			userId,
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
+}
+
+export async function storeListOfItems(
+	storeId,
+	isPaginated,
+	page,
+	size,
+	searchValue,
+	sortBy,
+	sortDirection
+) {
+	return apiClient
+		.get(`${url}/${storeId}/item`, {
+			params: {
+				isPaginated,
+				page,
+				size,
+				searchValue,
+				sortBy,
+				sortDirection,
+			},
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
+}
+
+export async function addItemToStore(storeId, itemIdList = []) {
+	return apiClient
+		.post(`${url}/${storeId}/item`, {
+			itemIdList,
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
+}
+
+export async function updateStoreItemPrice(
+	storeId,
+	itemId,
+	{ priceMode, fixedPrice }
+) {
+	return apiClient
+		.patch(`${url}/${storeId}/item/${itemId}`, {
+			priceMode,
+			fixedPrice,
 		})
 		.then((response) => {
 			if (response) {
@@ -74,6 +136,6 @@ export async function getEmployeeById(
 	})
 }
 
-export async function adddEmployee(employee) {
+export async function addEmployee(employee) {
 	return apiClient.post(`${url}/add-employee`, employee)
 }

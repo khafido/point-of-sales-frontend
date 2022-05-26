@@ -51,12 +51,14 @@ const StoreDetail = ({ storeId }) => {
 	}, [storeId, serachValue, page, sortBy, sortDir, pageSize])
 
 	const fetchStore = () => {
-		api.getById(storeId)
+		api.getByStoreId(storeId)
 			.then((res) => {
 				if (res) {
 					const store = res.data.result
 					store.key = res.data.result.id
-					store.totalEmployee = '-'
+					store.totalEmployee = store.totalEmployee
+						? store.totalEmployee
+						: '-'
 					store.manager = store.manager
 						? res.data.result.manager.firstName +
 						  ' ' +
@@ -126,7 +128,7 @@ const StoreDetail = ({ storeId }) => {
 			storeId: storeId,
 			userId: value.userId,
 		}
-		api.adddEmployee(reqData)
+		api.addEmployee(reqData)
 			.then((res) => {
 				if (res) {
 					message.success(res.data.message)
@@ -140,33 +142,7 @@ const StoreDetail = ({ storeId }) => {
 				}
 			})
 			.finally(() => {})
-		// if (mode == 'Create') {
-		// 	create(value)
-		// 		.then((res) => {
-		// 			if (res) {
-		// 				message.success(res.data.message)
-		// 				fetchStore()
-		// 			}
-		// 		})
-		// 		.catch((err) => {
-		// 			if (err) {
-		// 				message.error(err.response.data.message)
-		// 			}
-		// 		})
-		// } else {
-		// 	update(storeId, value)
-		// 		.then((res) => {
-		// 			if (res) {
-		// 				message.success(res.data.message)
-		// 				fetchStore()
-		// 			}
-		// 		})
-		// 		.catch((err) => {
-		// 			if (err) {
-		// 				message.error(err.response.data.message)
-		// 			}
-		// 		})
-		// }
+
 		console.log('Received values of form: ', value)
 		setVisible(false)
 	}
@@ -244,6 +220,20 @@ const StoreDetail = ({ storeId }) => {
 			title: 'Roles',
 			key: 'roles',
 			dataIndex: 'roles',
+			filters: [
+				{ text: 'Stockist', value: 'ROLE_STOCKIST' },
+				{ text: 'Cashier', value: 'ROLE_CASHIER' },
+			],
+			onFilter: (value, record) => {
+				let found = false
+				record.user.roles.forEach((val) => {
+					if (val.name.includes(value)) {
+						found = true
+					}
+				})
+				return found
+			},
+			filterSearch: true,
 			render: (t, r) =>
 				r.user.roles.map((v, k) => (
 					<Space key={k}>
