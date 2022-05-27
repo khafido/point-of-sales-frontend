@@ -12,7 +12,8 @@ export default function Index() {
   const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee'))
 
   const { RangePicker } = DatePicker
-  const [dateRange, setDateRange] = useState([moment().subtract(10, 'years'), moment()]);
+  const [dateRange, setDateRange] = useState([moment().subtract(50, 'years'), moment().add(1, 'days')]);
+  const [defaultDate, setDefaultDate] = useState([moment().subtract(50, 'years'), moment().add(1, 'days')]);
 
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
@@ -41,10 +42,9 @@ export default function Index() {
     searchBy = searchVal,
     page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
-    startDate = new Date(dateRange[0]),
-    endDate = new Date(dateRange[1])
+    startDate = dateRange == null ? new Date(defaultDate[0]) : new Date(dateRange[0]),
+    endDate = dateRange == null ? new Date(defaultDate[1]) : new Date(dateRange[1])
   ) => {
-    console.log('exp', new Date(dateRange[0]))
     setTableLoading(true)
     storeAPI.storeListofExpiredItems(currentStoreId, true, page, pageSize, searchBy, sortBy, sortDir, startDate, endDate)
       .then(result => {
@@ -69,9 +69,6 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-    console.log("start", dateRange[0])
-    console.log("end", dateRange[1])
-
   }, [searchVal, page, sortBy, sortDir, dateRange])
 
   const columns = [
@@ -125,6 +122,10 @@ export default function Index() {
       dataIndex: 'buyDate',
       align: 'center',
       width: '30%',
+      sorter: {
+        compare: (a, b) => a.name - b.name,
+        multiple: 1,
+      },
 
     },
     {
@@ -133,6 +134,10 @@ export default function Index() {
       dataIndex: 'expiryDate',
       align: 'center',
       width: '30%',
+      sorter: {
+        compare: (a, b) => a.name - b.name,
+        multiple: 1,
+      },
 
 
     },
