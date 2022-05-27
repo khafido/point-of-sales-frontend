@@ -23,15 +23,8 @@ export async function getAll(
 	})
 }
 
-export async function getById(storeId) {
+export async function getByStoreId(storeId) {
 	return apiClient.get(`${url}/${storeId}`)
-    .then(response=> {
-        if(response) {
-            return response.data
-        }
-        return false
-    })
-    .catch(err => console.log(err))
 }
 
 export async function create(storeData) {
@@ -47,63 +40,102 @@ export async function remove(id) {
 }
 
 export async function assignManager(storeId, userId) {
-	return apiClient.post(`${url}/${storeId}/manager`, {
-		userId
-	}).then(response=> {
-		if(response) {
-			return response.data
-		}
-		return false
-	})
-	.catch(err => console.log(err))
+	return apiClient
+		.post(`${url}/${storeId}/manager`, {
+			userId,
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
 }
 
-export async function storeListOfItems(storeId, isPaginated, page, size, searchValue, sortBy, sortDirection) {
-    return apiClient
-        .get(`${url}/${storeId}/item`, {
-            params: {
-                isPaginated,
-                page,
-                size,
-                searchValue,
-                sortBy,
-                sortDirection
-        }})
-        .then(response=> {
-            if(response) {
-                return response.data
-            }
-            return false
-        })
-        .catch(err => console.log(err))
+export async function storeListOfItems(
+	storeId,
+	isPaginated,
+	page,
+	size,
+	searchValue,
+	sortBy,
+	sortDirection
+) {
+	return apiClient
+		.get(`${url}/${storeId}/item`, {
+			params: {
+				isPaginated,
+				page,
+				size,
+				searchValue,
+				sortBy,
+				sortDirection,
+			},
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
 }
 
 export async function addItemToStore(storeId, itemIdList = []) {
-    return apiClient
-        .post(`${url}/${storeId}/item`, {
-            itemIdList
-        })
-        .then(response=> {
-            if(response) {
-                return response.data
-            }
-            return false
-        })
-        .catch(err => console.log(err))
+	return apiClient
+		.post(`${url}/${storeId}/item`, {
+			itemIdList,
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
 }
 
-export async function updateStoreItemPrice(storeId, itemId, {priceMode, fixedPrice}) {
-    return apiClient
-        .patch(`${url}/${storeId}/item/${itemId}`, {
-            priceMode,
-			fixedPrice
-        })
-        .then(response=> {
-            if(response) {        
-                return response.data
-            }
-            return false
-        })
-        .catch(err => console.log(err))
+export async function updateStoreItemPrice(
+	storeId,
+	itemId,
+	{ priceMode, fixedPrice }
+) {
+	return apiClient
+		.patch(`${url}/${storeId}/item/${itemId}`, {
+			priceMode,
+			fixedPrice,
+		})
+		.then((response) => {
+			if (response) {
+				return response.data
+			}
+			return false
+		})
+		.catch((err) => console.log(err))
 }
 
+export async function getEmployeeById(
+	storeId,
+	isPaginated,
+	page,
+	size,
+	searchValue,
+	sortBy,
+	sortDirection
+) {
+	return apiClient.get(`${url}/${storeId}/employee`, {
+		params: {
+			isPaginated,
+			page,
+			size,
+			searchValue,
+			sortBy,
+			sortDirection,
+		},
+	})
+}
+
+export async function addEmployee(employee) {
+	return apiClient.post(`${url}/add-employee`, employee)
+}
