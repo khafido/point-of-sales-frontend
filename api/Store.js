@@ -23,6 +23,7 @@ export async function getAll(
     })
 }
 
+
 export async function getById(storeId) {
     return apiClient.get(`${url}/${storeId}`)
         .then(response => {
@@ -32,6 +33,10 @@ export async function getById(storeId) {
             return false
         })
         .catch(err => console.log(err))
+}
+
+export async function getByStoreId(storeId) {
+	return apiClient.get(`${url}/${storeId}`)
 }
 
 export async function create(storeData) {
@@ -131,3 +136,27 @@ export async function updateStoreItemPrice(storeId, itemId, { priceMode, fixedPr
         .catch(err => console.log(err))
 }
 
+export async function getEmployeeById(
+	storeId,
+	isPaginated,
+	page,
+	size,
+	searchValue,
+	sortBy,
+	sortDirection
+) {
+	return apiClient.get(`${url}/${storeId}/employee`, {
+		params: {
+			isPaginated,
+			page,
+			size,
+			searchValue,
+			sortBy,
+			sortDirection,
+		},
+	})
+}
+
+export async function addEmployee(employee) {
+	return apiClient.post(`${url}/add-employee`, employee)
+}
