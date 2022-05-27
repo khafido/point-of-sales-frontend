@@ -14,15 +14,13 @@ export default function Index() {
   const auth = useSelector((state) => state.auth);
 
   const { RangePicker } = DatePicker
-  const [dateRange, setDateRange] = useState([moment().subtract(1, 'days'), moment()]);
+  const [dateRange, setDateRange] = useState([moment().subtract(10, 'years'), moment()]);
 
   const [searchVal, setSearchVal] = useState('');
   const [tableData, setTableData] = useState([]);
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('');
   const [sortDir, setSortDir] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 });
   const [tableTotalPages, setTableTotalPages] = useState(0);
 
