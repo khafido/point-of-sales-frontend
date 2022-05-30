@@ -341,6 +341,16 @@ export default function Index() {
       sorter: (a, b) => null,
     },
     {
+      title: 'Expired Date',
+      key: 'expiredDate',
+      dataIndex: 'latestExpiredDate',
+      render: (text, record, index)=> (
+        <div>
+          {record.earlyExpiredDate? `${record.earlyExpiredDate} - ${record.latestExpiredDate}` : '-'}
+        </div>
+      )
+    },
+    {
       title: 'Fixed Price',
       key: 'fixedPrice',
       dataIndex: 'fixedPrice',
