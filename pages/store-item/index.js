@@ -60,10 +60,6 @@ export default function Index() {
     sortDir = tableSortDir
   )=> {
     if(!sId) {
-      notification.error({
-        message: 'Failed to get store Id',
-        duration: 0
-      })
       return
     }
     setTableLoading(true)
@@ -83,6 +79,13 @@ export default function Index() {
   }
 
   const loadStoreData = ()=> {
+    if(!currentStoreId) {
+      notification.error({
+        message: 'Failed to get store Id',
+        duration: 0
+      })
+      return
+    }
     store.getById(currentStoreId)
     .then(result=>setStoreData(result.result))
   }
