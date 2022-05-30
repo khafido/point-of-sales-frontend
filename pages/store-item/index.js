@@ -296,22 +296,39 @@ export default function Index() {
               loadTableData()
           })
           break
-        case 'delete':
-          if(!currentRoles.includes('STOCKIST')) {
-            setSubmitLoading(false)
-            notification.error({
-              message: 'Action Invalid Role',
-              description: result.message
-            })
-            return
-          }
-
-          //TODO: api delete
-          break
       }
     }).catch((info) => {
       return
     })
+
+    if(submitParam.type === 'delete') {
+      if(!currentRoles.includes('STOCKIST')) {
+        setSubmitLoading(false)
+        notification.error({
+          message: 'Action Invalid Role',
+          description: result.message
+        })
+        return
+      }
+
+      store.deleteStoreItem(currentStoreId, submitParam.id)
+        .then(result=> {
+          setSubmitLoading(false)
+          if(result.status === 'SUCCESS') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
+        }
+      )
+    }
   }
 
   const columns = [

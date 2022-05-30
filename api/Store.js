@@ -1,5 +1,6 @@
 import apiClient from 'api'
 import jsCookie from 'js-cookie'
+import { store } from 'redux'
 
 const url = '/store'
 
@@ -159,4 +160,16 @@ export async function getEmployeeById(
 
 export async function addEmployee(employee) {
 	return apiClient.post(`${url}/add-employee`, employee)
+}
+
+export async function deleteStoreItem(storeId, itemId) {
+    return apiClient
+        .delete(`${url}/${storeId}/item/${itemId}`)
+        .then(response=> {
+            if(response) {        
+                return response.data
+            }
+            return false
+        })
+        .catch(err => console.log(err))
 }
