@@ -1,17 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import Layout from '@components/Layout';
-import { Button, Col, Descriptions, Divider, Form, Image, Input, Modal, notification, Popconfirm, Row, Select, Space, Table } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react'
+import Layout from '@components/Layout'
+import { Button, Col, Descriptions, Divider, Form, Image, Input, Modal, notification, Popconfirm, Row, Select, Space, Table } from 'antd'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import * as store from 'api/Store'
 import * as item from 'api/Item'
-import jsCookie from 'js-cookie';
-import Search from 'antd/lib/input/Search';
+import jsCookie from 'js-cookie'
+import Search from 'antd/lib/input/Search'
+import { useSelector } from 'react-redux'
+
+
 
 export default function Index() {
 
+  const auth = useSelector((state) => state.auth);
   const [form] = Form.useForm()
 
-  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee'))
+  const [currentRoles, setCurrentRoles] = useState(jsCookie.get('roles')? JSON.parse(jsCookie.get('roles')): [])
+
+  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee')? jsCookie.get('store_id_employee') : jsCookie.get('store_id_manager'))
   const [storeData, setStoreData] = useState(null)
 
   const [searchLoading, setSearchLoading] = useState(false)
@@ -53,6 +59,9 @@ export default function Index() {
     sortBy = tableSortBy,
     sortDir = tableSortDir
   )=> {
+    if(!sId) {
+      return
+    }
     setTableLoading(true)
     store.storeListOfItems(sId, true, page, pageSize, searchBy, sortBy, sortDir)
     .then(result=> {
@@ -70,6 +79,13 @@ export default function Index() {
   }
 
   const loadStoreData = ()=> {
+    if(!currentStoreId) {
+      notification.error({
+        message: 'Failed to get store Id',
+        duration: 0
+      })
+      return
+    }
     store.getById(currentStoreId)
     .then(result=>setStoreData(result.result))
   }
@@ -93,7 +109,6 @@ export default function Index() {
   const onTableSort = (sorter) => {
 		setTableSortBy(sorter.field)
 		setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC')
-		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
 	}
 
   const onSearchData = (value , e)=> {
@@ -207,7 +222,6 @@ export default function Index() {
           submitBtnType: 'primary'
         })
         break
-
     }
   }
 
@@ -220,9 +234,20 @@ export default function Index() {
       setSubmitLoading(true);
       switch(submitParam.type) {
         case 'add':
+          if(!currentRoles.includes('STOCKIST')) {
+            setModalVisible(false)
+            setSubmitLoading(false)
+            form.resetFields()
+            notification.error({
+              message: 'Action Invalid Role',
+              description: result.message
+            })
+            return
+          }
+
           store.addItemToStore(currentStoreId, values.item).then(result=> {
-              setModalVisible(false);
-              setSubmitLoading(false);
+              setModalVisible(false)
+              setSubmitLoading(false)
               if(result.status === 'SUCCESS') {
                 form.resetFields()
                 notification.success({
@@ -239,12 +264,23 @@ export default function Index() {
           })
           break
         case 'edit':
+          if(!currentRoles.includes('MANAGER')) {
+            setModalVisible(false)
+            setSubmitLoading(false)
+            form.resetFields()
+            notification.error({
+              message: 'Action Invalid Role',
+              description: result.message
+            })
+            return
+          }
+
           store.updateStoreItemPrice(currentStoreId, values.itemId, {
             priceMode: values.priceMode,
             fixedPrice: values.fixedPrice
           }).then(result=> {
-              setModalVisible(false);
-              setSubmitLoading(false);
+              setModalVisible(false)
+              setSubmitLoading(false)
               if(result.status === 'SUCCESS') {
                 form.resetFields()
                 notification.success({
@@ -264,6 +300,35 @@ export default function Index() {
     }).catch((info) => {
       return
     })
+
+    if(submitParam.type === 'delete') {
+      if(!currentRoles.includes('STOCKIST')) {
+        setSubmitLoading(false)
+        notification.error({
+          message: 'Action Invalid Role',
+          description: result.message
+        })
+        return
+      }
+
+      store.deleteStoreItem(currentStoreId, submitParam.id)
+        .then(result=> {
+          setSubmitLoading(false)
+          if(result.status === 'SUCCESS') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
+        }
+      )
+    }
   }
 
   const columns = [
@@ -293,6 +358,16 @@ export default function Index() {
       sorter: (a, b) => null,
     },
     {
+      title: 'Expired Date',
+      key: 'expiredDate',
+      dataIndex: 'latestExpiredDate',
+      render: (text, record, index)=> (
+        <div>
+          {record.earlyExpiredDate? `${record.earlyExpiredDate} - ${record.latestExpiredDate}` : '-'}
+        </div>
+      )
+    },
+    {
       title: 'Fixed Price',
       key: 'fixedPrice',
       dataIndex: 'fixedPrice',
@@ -315,29 +390,36 @@ export default function Index() {
       fixed: 'right',
       render: (text, record, index)=> (
         <Space wrap>
-          <Button 
-            type='primary' 
-            icon={<EditOutlined/>} 
-            onClick={()=> showModal('edit', record.id)}
-          >
-            Set Price
-          </Button>
-
-          {/* <Popconfirm
-						title={`Confirm to delete ${record.name}`}
-						onConfirm={(e) => {
-              console.log(submitParam)
-              handleModalSubmit()
-						}}
-						okText="Yes"
-						okButtonProps={{ type: 'danger', loading: submitLoading }}
-						cancelText="No"
-					>
-            <Button type='danger' icon={<DeleteOutlined/>} onClick={()=>{
-              setSubmitParam({type: 'delete', id: record.id})}}>
-                Delete            
+          {currentRoles.includes('MANAGER')?
+            <Button 
+              type='primary' 
+              icon={<EditOutlined/>} 
+              onClick={()=> showModal('edit', record.id)}
+            >
+              Set Price
             </Button>
-					</Popconfirm> */}
+            : null
+          }
+          
+          {currentRoles.includes('STOCKIST')?
+            <Popconfirm
+              title={`Confirm to delete ${record.name}`}
+              onConfirm={(e) => {
+                console.log(submitParam)
+                handleModalSubmit()
+              }}
+              okText="Yes"
+              okButtonProps={{ type: 'danger', loading: submitLoading }}
+              cancelText="No"
+            >
+              <Button type='danger' icon={<DeleteOutlined/>} onClick={()=>{
+                setSubmitParam({type: 'delete', id: record.id})}}>
+                  Delete            
+              </Button>
+            </Popconfirm>
+            : null
+          }
+          
         </Space>
       )
     }
@@ -361,14 +443,18 @@ export default function Index() {
           />
         </Col>
         <Col span={18}>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            style={{float: 'right'}} 
-            onClick={()=> showModal('add')}
-          >
-            Add New
-          </Button>
+          {currentRoles.includes('STOCKIST')?
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              style={{float: 'right'}} 
+              onClick={()=> showModal('add')}
+            >
+              Add New
+            </Button>
+            : null 
+          }
+          
         </Col>
       </Row>
       <br />
