@@ -13,9 +13,9 @@ export async function getAllParameter() {
     .catch(err => console.log(err))
 }
 
-export async function updateParameter(id, { name, value }) {
+export async function updateParameter(id, { value }) {
   return apiClient
-    .put(`${url}/${id}`, { name, value })
+    .put(`${url}/${id}`, { value })
     .then(response => {
       if (response) {
         return response.data
