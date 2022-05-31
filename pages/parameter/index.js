@@ -17,12 +17,6 @@ export default function Index() {
   const [tableLoading, setTableLoading] = useState(false);
 
   const formRule = {
-    name: [
-      {
-        required: true,
-        message: 'Please input parameter',
-      },
-    ],
     value: [
       {
         required: true,
@@ -49,8 +43,8 @@ export default function Index() {
         setModalBody((
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
-              <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name} >
-                <Input maxLength={255} />
+              <Form.Item disabled='true' label='Name' name='name' hasFeedback required >
+                <Input maxLength={255} disabled />
               </Form.Item>
               <Form.Item label='Value' name='value' hasFeedback required rules={formRule.value} >
                 <Input maxLength={255} />

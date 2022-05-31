@@ -19,15 +19,12 @@ import { useForm } from 'antd/lib/form/Form'
 import * as api from 'api/Store'
 import * as role from 'api/Role'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 const { Search } = Input
 
-//nanti role si user ambil setelah dia login
-const Role = {
-	manager: 'ROLE_MANAGER',
-	owner: 'ROLE_OWNER',
-}
-
 const StoreDetail = ({ storeId }) => {
+	const currentUser = useSelector((state) => state.user)
+
 	const [store, setStore] = useState(null)
 	const [employee, setEmployee] = useState(null)
 	const [loading, setLoading] = useState({ store: true, employee: true })
@@ -43,10 +40,26 @@ const StoreDetail = ({ storeId }) => {
 
 	const [form] = useForm()
 
+	const [showEmployee, setShowEmployee] = useState(null)
+
 	useEffect(() => {
 		if (storeId) {
 			fetchStore()
 			fetchEmployee()
+		}
+
+		if (currentUser) {
+			const userRoles = currentUser.roles.map((val) => {
+				return val.name
+			})
+			const showEmployeesBool =
+				userRoles.includes('ROLE_ADMIN') ||
+				userRoles.includes('ROLE_MANAGER') ||
+				userRoles.includes('ROLE_OWNER')
+					? true
+					: false
+
+			setShowEmployee(showEmployeesBool)
 		}
 	}, [storeId, serachValue, page, sortBy, sortDir, pageSize])
 
@@ -381,53 +394,56 @@ const StoreDetail = ({ storeId }) => {
 				pagination={false}
 				loading={loading.store}
 			></Table>
-
 			<br />
-			<Divider orientation="left" orientationMargin={0}>
-				Employees
-			</Divider>
-			<Row justify="space-between">
-				<Col span={6}>
-					<Search
-						placeholder="Search employee"
-						onSearch={onSearch}
-						// onChange={(e) => {
-						// 	onSearch(e.target.value)
-						// }}
-					/>
-				</Col>
-				<Col>
-					<Button
-						type="primary"
-						onClick={() => {
-							setVisible(true)
+			{showEmployee && (
+				<div>
+					<Divider orientation="left" orientationMargin={0}>
+						Employees
+					</Divider>
+					<Row justify="space-between">
+						<Col span={6}>
+							<Search
+								placeholder="Search employee"
+								onSearch={onSearch}
+								// onChange={(e) => {
+								// 	onSearch(e.target.value)
+								// }}
+							/>
+						</Col>
+						<Col>
+							<Button
+								type="primary"
+								onClick={() => {
+									setVisible(true)
+								}}
+								icon={<PlusOutlined />}
+							>
+								Add Employee
+							</Button>
+						</Col>
+					</Row>
+					<br />
+					<Table
+						columns={employeeColumns}
+						dataSource={employee}
+						pagination={{
+							defaultCurrent: 1,
+							current: page,
+							pageSize: pageSize,
+							total: totalPage,
+							showSizeChanger: true,
+							onShowSizeChange: onSizeChange,
+							onChange: (pageVal) => {
+								setPage(pageVal)
+							},
 						}}
-						icon={<PlusOutlined />}
-					>
-						Add Employee
-					</Button>
-				</Col>
-			</Row>
-			<br />
-			<Table
-				columns={employeeColumns}
-				dataSource={employee}
-				pagination={{
-					defaultCurrent: 1,
-					current: page,
-					pageSize: pageSize,
-					total: totalPage,
-					showSizeChanger: true,
-					onShowSizeChange: onSizeChange,
-					onChange: (pageVal) => {
-						setPage(pageVal)
-					},
-				}}
-				onChange={(pagination, filter, sorter) => {
-					onSortAndPagination(pagination, sorter)
-				}}
-			></Table>
-			<AddEmployeeModal />
+						onChange={(pagination, filter, sorter) => {
+							onSortAndPagination(pagination, sorter)
+						}}
+					></Table>
+					<AddEmployeeModal />
+				</div>
+			)}
 		</>
 	)
 }

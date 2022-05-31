@@ -13,14 +13,23 @@ export async function getAllParameter() {
     .catch(err => console.log(err))
 }
 
-export async function updateParameter(id, { name, value }) {
+export async function updateParameter(id, { value }) {
   return apiClient
-    .put(`${url}/${id}`, { name, value })
+    .put(`${url}/${id}`, { value })
     .then(response => {
       if (response) {
         return response.data
       }
       return false
+    })
+    .catch(err => console.log(err))
+}
+
+export async function checkParameterExist(parameter) {
+  return apiClient
+    .get(`${url}/check-parameter/${parameter}`)
+    .then(response => {
+      return response.data
     })
     .catch(err => console.log(err))
 }
