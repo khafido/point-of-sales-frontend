@@ -22,6 +22,18 @@ export default function Index() {
         required: true,
         message: 'Please input parameter',
       },
+      {
+        validator: async (rule, value) => {
+          let status = await parameter.checkParameterExist(value).then(res => {
+            return res;
+          });
+          console.log('parameter', status);
+          if (status) {
+            return Promise.reject('Parameter already exist');
+          }
+          return Promise.resolve();
+        }
+      }
     ],
     value: [
       {
