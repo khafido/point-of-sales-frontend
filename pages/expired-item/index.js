@@ -7,7 +7,7 @@ import moment from 'moment';
 import jsCookie from 'js-cookie';
 
 export default function Index() {
-  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee'))
+  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_manager'))
 
   const { RangePicker } = DatePicker
   const [dateRange, setDateRange] = useState([moment().subtract(50, 'years'), moment().add(1, 'days')]);
