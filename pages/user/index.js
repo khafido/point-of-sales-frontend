@@ -333,6 +333,11 @@ export default function Index() {
           <Search
             placeholder="Search User"
             onSearch={onSearchData}
+            onChange={(e) => {
+                if (e.target.value === '') {
+                  onSearchData(e.target.value);
+                }                            
+            }}
           />
         </Col>
         <Col span={18}>
