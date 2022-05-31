@@ -118,7 +118,6 @@ export default function Index() {
         form.setFieldsValue({
           id,
           name: editData.name,
-          code: editData.code,
           value: editData.value,
           startDate: moment(editData.startDate),
           endDate: moment(editData.endDate),
@@ -131,9 +130,6 @@ export default function Index() {
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
               <Form.Item label='Name' name='name' hasFeedback required>
-                <Input maxLength={255} />
-              </Form.Item>
-              <Form.Item label='Code' name='code' hasFeedback required rules={formRule.code} >
                 <Input maxLength={255} />
               </Form.Item>
               <Form.Item label='Value' name='value' hasFeedback required>
