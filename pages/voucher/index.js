@@ -97,7 +97,7 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='Minimum Buying Price' name='minimumPrice' hasFeedback required>
+              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -114,14 +114,14 @@ export default function Index() {
       case 'edit':
         const editIndex = tableData.findIndex((element) => element.id === id)
         const editData = tableData[editIndex]
+        console.log("ed", editData)
         form.setFieldsValue({
           id,
           name: editData.name,
-          code: editData.code,
           value: editData.value,
-          startDate: editData.startDate,
-          endDate: editData.endDate,
-          minimumPrice: editData.minimumPrice,
+          startDate: moment(editData.startDate),
+          endDate: moment(editData.endDate),
+          minimumPurchase: editData.minimumPurchase,
           description: editData.description
 
         })
@@ -130,9 +130,6 @@ export default function Index() {
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
               <Form.Item label='Name' name='name' hasFeedback required>
-                <Input maxLength={255} />
-              </Form.Item>
-              <Form.Item label='Code' name='code' hasFeedback required rules={formRule.code} >
                 <Input maxLength={255} />
               </Form.Item>
               <Form.Item label='Value' name='value' hasFeedback required>
@@ -157,7 +154,7 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='Minimum Buying Price' name='minimumPrice' hasFeedback required>
+              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -184,6 +181,7 @@ export default function Index() {
   };
 
   const handleOk = (value) => {
+    console.log("val", value)
     setConfirmLoading(true);
     switch (submitParam.type) {
       case 'add':
@@ -249,7 +247,6 @@ export default function Index() {
   }
 
   const handleCancel = () => {
-    console.log('Clicked cancel button');
     form.resetFields()
     setVisible(false);
   }
@@ -263,7 +260,15 @@ export default function Index() {
     voucher.listVoucher(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result => {
         if (result.result) {
-          setTableData(result.result.currentPageContent)
+          console.log("conten", result.result.currentPageContent)
+          let res = result.result.currentPageContent
+          res.map(e => {
+            let startDate = moment(new Date(e.startDate))
+            e.startDate = startDate.format("YYYY-MM-DD")
+            let endDate = moment(new Date(e.endDate))
+            e.endDate = endDate.format("YYYY-MM-DD")
+          })
+          setTableData(res)
           setTableTotalPages(result.result.totalPages)
           setTableLoading(false)
         } else {

@@ -17,42 +17,42 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTitle, setModalTitle] = useState('')
   const [modalBody, setModalBody] = useState((<div></div>))
-  const [modalFooterConfig, setModalFooterConfig] = useState({submitBtnText: '', submitBtnType: ''})
+  const [modalFooterConfig, setModalFooterConfig] = useState({ submitBtnText: '', submitBtnType: '' })
 
   const [searchVal, setSearchVal] = useState('')
   const [formData, setFormData] = useState({})
   const [submitDisabled, setSubmitDisabled] = useState(true)
-  const [submitParam, setSubmitParam] = useState({type: '', id: ''})
+  const [submitParam, setSubmitParam] = useState({ type: '', id: '' })
 
   const [tableData, setTableData] = useState([])
-  const [tablePagination, setTablePagination] = useState({page: 1, pageSize: 10})
+  const [tablePagination, setTablePagination] = useState({ page: 1, pageSize: 10 })
   const [tableTotalPages, setTableTotalPages] = useState(0)
 
   const [tableSortBy, setTableSortBy] = useState('name')
   const [tableSortDir, setTableSortDir] = useState('ASC')
 
   const showModal = (type, id) => {
-    setSubmitParam({type, id})
+    setSubmitParam({ type, id })
     setModalVisible(true)
-    switch(type) {
+    switch (type) {
       case 'add':
         setModalTitle('Add New Supplier')
         setModalBody((
           <div>
             <Form layout='vertical' autoComplete='off' onFieldsChange={onFieldsChange} form={form}>
-              <Form.Item label='Name' name='name' hasFeedback required rules={[{required: true, message: 'Please input supplier name'}]}>
+              <Form.Item label='Name' name='name' hasFeedback required rules={[{ required: true, message: 'Please input supplier name' }]}>
                 <Input maxLength={255} />
               </Form.Item>
-              <Form.Item label='Contact Person' name='cpname' hasFeedback required rules={[{required: true, message: 'Please input contact person supplier name'}]} >
+              <Form.Item label='Contact Person' name='cpname' hasFeedback required rules={[{ required: true, message: 'Please input contact person supplier name' }]} >
                 <Input maxLength={255} />
               </Form.Item>
-              <Form.Item label='Email' name='email' hasFeedback required rules={[{required: true, type:'email', message: 'Please input supplier email'}]}>
+              <Form.Item label='Email' name='email' hasFeedback required rules={[{ required: true, type: 'email', message: 'Please input supplier email' }]}>
                 <Input maxLength={255} type='email' />
               </Form.Item>
-              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number'}]}>
+              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{ required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number' }]}>
                 <Input maxLength={255} type='tel' />
               </Form.Item>
-              <Form.Item label='Address' name='address' hasFeedback required rules={[{required: true, message: 'Please input supplier address'}]}>
+              <Form.Item label='Address' name='address' hasFeedback required rules={[{ required: true, message: 'Please input supplier address' }]}>
                 <Input.TextArea maxLength={255} showCount />
               </Form.Item>
             </Form>
@@ -65,7 +65,7 @@ export default function Index() {
         setSubmitDisabled(true)
         break
       case 'edit':
-        const editIndex = tableData.findIndex((element)=> element.id === id)
+        const editIndex = tableData.findIndex((element) => element.id === id)
         const editData = tableData[editIndex]
         form.setFieldsValue({
           id,
@@ -73,7 +73,7 @@ export default function Index() {
           cpname: editData.cpname,
           email: editData.email,
           phone: editData.phone,
-          address:editData.address
+          address: editData.address
         })
 
         setModalTitle('Edit Supplier')
@@ -83,19 +83,19 @@ export default function Index() {
               <Form.Item label='ID' name='id' initialValue={id}>
                 <Input maxLength={255} readOnly />
               </Form.Item>
-              <Form.Item label='Name' name='name' hasFeedback required rules={[{required: true, message: 'Please input supplier name'}]}>
-                <Input maxLength={255}/>
-              </Form.Item>
-              <Form.Item label='Contact Person' name='cpname' hasFeedback required rules={[{required: true, message: 'Please input contact person supplier name'}]}>
+              <Form.Item label='Name' name='name' hasFeedback required rules={[{ required: true, message: 'Please input supplier name' }]}>
                 <Input maxLength={255} />
               </Form.Item>
-              <Form.Item label='Email' name='email' hasFeedback required rules={[{required: true, type:'email', message: 'Please input supplier email'}]}>
+              <Form.Item label='Contact Person' name='cpname' hasFeedback required rules={[{ required: true, message: 'Please input contact person supplier name' }]}>
+                <Input maxLength={255} />
+              </Form.Item>
+              <Form.Item label='Email' name='email' hasFeedback required rules={[{ required: true, type: 'email', message: 'Please input supplier email' }]}>
                 <Input maxLength={255} type='email' />
               </Form.Item>
-              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number'}]}>
+              <Form.Item label='Phone' name='phone' hasFeedback required rules={[{ required: true, pattern: /^[0-9]{1,15}$/, message: 'Please input valid phone number' }]}>
                 <Input maxLength={255} type='tel' />
               </Form.Item>
-              <Form.Item label='Address' name='address' hasFeedback required rules={[{required: true, message: 'Please input supplier address'}]}>
+              <Form.Item label='Address' name='address' hasFeedback required rules={[{ required: true, message: 'Please input supplier address' }]}>
                 <Input.TextArea maxLength={255} showCount />
               </Form.Item>
             </Form>
@@ -108,9 +108,9 @@ export default function Index() {
         setSubmitDisabled(true)
         break
       case 'delete':
-        const deleteIndex = tableData.findIndex((element)=> element.id === id)
+        const deleteIndex = tableData.findIndex((element) => element.id === id)
         const deleteData = tableData[deleteIndex]
-        
+
         setModalTitle('Delete Supplier')
         setModalBody((
           `Are you sure want to delete supplier ${deleteData.name}?`
@@ -124,7 +124,7 @@ export default function Index() {
     }
   };
 
-  const onFieldsChange = (changedField, allFields)=> {
+  const onFieldsChange = (changedField, allFields) => {
     let data = {}
     allFields.forEach(element => {
       data[`${element.name[0]}`] = {
@@ -142,7 +142,7 @@ export default function Index() {
 
   const handleModalSubmit = () => {
     setSubmitLoading(true);
-    switch(submitParam.type) {
+    switch (submitParam.type) {
       case 'add':
         supplier.addSupplier({
           name: formData.name.value,
@@ -150,21 +150,21 @@ export default function Index() {
           phone: formData.phone.value,
           address: formData.address.value,
           cpname: formData.cpname.value
-        }).then(result=> {
-            setModalVisible(false);
-            setSubmitLoading(false);
-            if(result.status === 'SUCCESS') {
-              notification.success({
-                message: result.message,
-                duration: 3
-              })
-            } else {
-              notification.error({
-                message: result.status,
-                description: result.message
-              })
-            }
-            loadTableData()
+        }).then(result => {
+          setModalVisible(false);
+          setSubmitLoading(false);
+          if (result.status === 'SUCCESS') {
+            notification.success({
+              message: result.message,
+              duration: 3
+            })
+          } else {
+            notification.error({
+              message: result.status,
+              description: result.message
+            })
+          }
+          loadTableData()
         })
         break
       case 'edit':
@@ -174,10 +174,10 @@ export default function Index() {
           phone: formData.phone.value,
           address: formData.address.value,
           cpname: formData.cpname.value
-        }).then(result=> {
+        }).then(result => {
           setModalVisible(false);
           setSubmitLoading(false);
-          if(result.status === 'SUCCESS') {
+          if (result.status === 'SUCCESS') {
             notification.success({
               message: result.message,
               duration: 3
@@ -193,31 +193,31 @@ export default function Index() {
         break
       case 'delete':
         supplier.deleteSupplier(submitParam.id)
-        .then(result=> {
-          setModalVisible(false);
-          setSubmitLoading(false);
-          if(result.status === 'SUCCESS') {
-            notification.success({
-              message: result.message,
-              duration: 3
-            })
-          } else {
-            notification.error({
-              message: result.status,
-              description: result.message
-            })
-          }
-          loadTableData()
-        })
+          .then(result => {
+            setModalVisible(false);
+            setSubmitLoading(false);
+            if (result.status === 'SUCCESS') {
+              notification.success({
+                message: result.message,
+                duration: 3
+              })
+            } else {
+              notification.error({
+                message: result.status,
+                description: result.message
+              })
+            }
+            loadTableData()
+          })
         break
     }
   }
 
-  const validateForm = ()=> {
-    if(Object.keys(formData).length>0) {
+  const validateForm = () => {
+    if (Object.keys(formData).length > 0) {
       let filled = false
-      for(var key of Object.keys(formData)) {
-        if(Object.keys(formData[key]['errors']).length>0 || !formData[key]['value']) {
+      for (var key of Object.keys(formData)) {
+        if (Object.keys(formData[key]['errors']).length > 0 || !formData[key]['value']) {
           filled = true
           break
         }
@@ -226,14 +226,14 @@ export default function Index() {
     }
   }
 
-  const onChangePagination = (page, pageSize)=> {
+  const onChangePagination = (page, pageSize) => {
     setTablePagination({
-      page, 
+      page,
       pageSize
     })
   }
 
-  const onSearchData = (value , e)=> {
+  const onSearchData = (value, e) => {
     setSearchLoading(true)
     setSearchVal(value)
     setTablePagination({
@@ -244,38 +244,38 @@ export default function Index() {
 
   const loadTableData = (
     searchBy = searchVal,
-    page = tablePagination.page-1, 
+    page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
     sortBy = tableSortBy,
     sortDir = tableSortDir
-  )=> {
+  ) => {
     setTableLoading(true)
     supplier.listSuppliers(true, page, pageSize, searchBy, sortBy, sortDir)
-    .then(result=> {
-      if(result.result) {
-        setTableData(result.result.currentPageContent)
-        setTableTotalPages(result.result.totalPages)
-        setTableLoading(false)
-      } else {
-        notification.error({
-          message: result.message? result.message : 'Error loading supplier data',
-          duration: 0
-        })
-      }
-    })
+      .then(result => {
+        if (result.result) {
+          setTableData(result.result.currentPageContent)
+          setTableTotalPages(result.result.totalPages)
+          setTableLoading(false)
+        } else {
+          notification.error({
+            message: result.message ? result.message : 'Error loading supplier data',
+            duration: 0
+          })
+        }
+      })
   }
 
   const onTableSort = (sorter) => {
-		setTableSortBy(sorter.field)
-		setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC')
-		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
-	}
+    setTableSortBy(sorter.field)
+    setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC')
+    console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+  }
 
-  useEffect(()=> {
+  useEffect(() => {
     validateForm()
   }, [formData])
 
-  useEffect(()=> {
+  useEffect(() => {
     loadTableData()
     setSearchLoading(false)
   }, [tablePagination, tableSortBy, tableSortDir])
@@ -312,25 +312,26 @@ export default function Index() {
     {
       title: 'Action',
       key: 'action',
-      render: (text, record, index)=> (
+      render: (text, record, index) => (
         <Space size="middle">
-          <Button type='primary' icon={<EditOutlined/>}  onClick={()=> showModal('edit', record.id)}>Edit</Button>
+          <Button type='primary' icon={<EditOutlined />} onClick={() => showModal('edit', record.id)}>Edit</Button>
 
           <Popconfirm
-						title={`Confirm to delete ${record.name}`}
-						onConfirm={(e) => {
+            title={`Confirm to delete ${record.name}`}
+            onConfirm={(e) => {
               console.log(submitParam)
               handleModalSubmit()
-						}}
-						okText="Yes"
-						okButtonProps={{ type: 'danger', loading: submitLoading }}
-						cancelText="No"
-					>
-            <Button type='danger' icon={<DeleteOutlined/>} onClick={()=>{
-              setSubmitParam({type: 'delete', id: record.id})}}>
-                Delete            
+            }}
+            okText="Yes"
+            okButtonProps={{ type: 'danger', loading: submitLoading }}
+            cancelText="No"
+          >
+            <Button type='danger' icon={<DeleteOutlined />} onClick={() => {
+              setSubmitParam({ type: 'delete', id: record.id })
+            }}>
+              Delete
             </Button>
-					</Popconfirm>
+          </Popconfirm>
         </Space>
       )
     }
@@ -340,18 +341,18 @@ export default function Index() {
     <Layout title="Supplier" subtitle="">
       <Row>
         <Col span={6}>
-          <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading}/>
+          <Search placeholder='Search' onSearch={onSearchData} loading={searchLoading} />
         </Col>
         <Col span={18}>
-          <Button type="primary" icon={<PlusOutlined />} style={{float: 'right'}} onClick={()=> showModal('add')}>Add New</Button>
+          <Button type="primary" icon={<PlusOutlined />} style={{ float: 'right' }} onClick={() => showModal('add')}>Add New</Button>
         </Col>
       </Row>
       <br />
-      <Table 
+      <Table
         columns={columns}
         dataSource={tableData}
         loading={tableLoading}
-        rowKey={(record)=> record.id}
+        rowKey={(record) => record.id}
         pagination={{
           onChange: onChangePagination,
           total: tableTotalPages * tablePagination.pageSize,
@@ -359,8 +360,8 @@ export default function Index() {
           showSizeChanger: true
         }}
         onChange={(pagination, filter, sorter) => {
-					onTableSort(sorter)
-				}}
+          onTableSort(sorter)
+        }}
       />
 
       <Modal

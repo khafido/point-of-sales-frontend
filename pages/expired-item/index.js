@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Table, Space } from 'antd';
+import { Col, DatePicker, Row, Table, Space } from 'antd';
 import Search from 'antd/lib/input/Search';
-import { PlusOutlined } from '@ant-design/icons';
 import * as storeAPI from 'api/Store';
 import moment from 'moment';
-import { useDispatch, useSelector } from 'react-redux';
 import jsCookie from 'js-cookie';
 
 export default function Index() {
-  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_employee'))
+  const [currentStoreId, setCurrentStoreId] = useState(jsCookie.get('store_id_manager'))
 
   const { RangePicker } = DatePicker
   const [dateRange, setDateRange] = useState([moment().subtract(50, 'years'), moment().add(1, 'days')]);
@@ -24,10 +22,7 @@ export default function Index() {
   const [tableTotalPages, setTableTotalPages] = useState(0);
 
   const [searchLoading, setSearchLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
-
-  const [visible, setVisible] = useState(false);
 
   const onSearchData = (value, e) => {
     setSearchLoading(true);

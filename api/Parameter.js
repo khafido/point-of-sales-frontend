@@ -24,3 +24,12 @@ export async function updateParameter(id, { name, value }) {
     })
     .catch(err => console.log(err))
 }
+
+export async function checkParameterExist(parameter) {
+  return apiClient
+    .get(`${url}/check-parameter/${parameter}`)
+    .then(response => {
+      return response.data
+    })
+    .catch(err => console.log(err))
+}
