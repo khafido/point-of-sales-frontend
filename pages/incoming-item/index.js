@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@components/Layout';
-import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Table, Space } from 'antd';
+import { Button, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Table, Space, message } from 'antd';
 import Search from 'antd/lib/input/Search';
 import { PlusOutlined } from '@ant-design/icons';
 import * as storeAPI from 'api/Store';
@@ -91,10 +91,11 @@ export default function Index() {
     itemAPI.addStock(values).then(res => {
       console.log(res);
       if (res.status == "CREATED") {
+        message.success("Incoming Item added successfully");
         setVisible(false);
         form.resetFields();
         setSubmitLoading(false);
-        loadTableData()
+        loadTableData();
       }
     });
   }
@@ -252,6 +253,7 @@ export default function Index() {
             <Modal
               title="Incoming Item"
               visible={visible}
+              okText="Save"
               onOk={() => {
                 form.submit();
                 // setVisible(false);

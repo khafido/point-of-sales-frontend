@@ -57,7 +57,7 @@ export default function Index() {
     user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
       .then(result => {
 
-        if (result.result) {
+        if (result && result.result) {
           let users = result.result.currentPageContent.map((item, key) => {
             item.key = item.id;
             item.numrow = key + 1;
@@ -77,14 +77,15 @@ export default function Index() {
 
           setTableData(users);
           setTableTotalPages(result.result.totalPages);
-          setTableLoading(false);
-          setSearchLoading(false);
         } else {
-          notification.error({
-            message: result.message ? result.message : 'Error get user data',
-            duration: 0
-          });
+          // notification.error({
+          //   message: result && result.message ? result.message : 'Error get user data',
+          //   duration: 0
+          // });
+          console.log('Error get user data');
         }
+        setTableLoading(false);
+        setSearchLoading(false);
       })
   }
 
@@ -256,28 +257,6 @@ export default function Index() {
     setTableData(numberedFilteredData);
   }
 
-  const assignOwner = (id) => {
-    alert(`Assign Owner to ${id}`);
-  }
-
-  const { confirm } = Modal;
-
-  const deleteUserModal = (id, name) => {
-    confirm({
-      title: `Are you sure want to delete ${name}?`,
-      icon: <ExclamationCircleOutlined />,
-      content: '',
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk() {
-        deleteUser(id);
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  }
   const [options, setOptions] = useState([])
   useEffect(() => {
     axios.get('http://localhost:8080/api/v1/role')
@@ -354,6 +333,11 @@ export default function Index() {
           <Search
             placeholder="Search User"
             onSearch={onSearchData}
+            onChange={(e) => {
+                if (e.target.value === '') {
+                  onSearchData(e.target.value);
+                }                            
+            }}
           />
         </Col>
         <Col span={18}>
@@ -380,7 +364,10 @@ export default function Index() {
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
         }}
-        onChange={onChange}
+        // onChange={onChange}
+        onChange={(pagination, filter, sorter) => {
+					onTableSort(sorter)
+				}}
         scroll={{ x: 1300 }} />
 
       <Modal
