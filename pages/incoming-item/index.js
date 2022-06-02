@@ -166,16 +166,16 @@ export default function Index() {
 
     },
     {
-      title: 'Price',
+      title: 'Price (Rupiah)',
       key: 'price',
       dataIndex: 'price',
       align: 'center',
+
       render: (text, record, index) => (
         <div>
           {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
         </div>
       )
-
     },
     {
       title: 'Buy Date',
