@@ -169,12 +169,16 @@ export default function Index() {
 
     },
     {
-      title: 'Price',
+      title: 'Price (Rupiah)',
       key: 'price',
       dataIndex: 'price',
       align: 'center',
       width: '10%',
-
+      render: (t, r) => {
+        return (
+          <span>{new Intl.NumberFormat('ja-JP').format(t)}</span>
+        )
+      }
     },
     {
       title: 'Buy Date',
