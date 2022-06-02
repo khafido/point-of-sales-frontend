@@ -123,7 +123,7 @@ export default function Index() {
       width: '30%',
     },
     {
-      title: 'Parameter Value (%)',
+      title: 'Parameter Value',
       key: 'value',
       dataIndex: 'value',
       align: 'center',

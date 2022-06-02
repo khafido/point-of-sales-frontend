@@ -81,7 +81,6 @@ export default function Index() {
       width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -92,7 +91,6 @@ export default function Index() {
       width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -101,7 +99,6 @@ export default function Index() {
       dataIndex: 'qty',
       align: 'center',
       width: '5%',
-
     },
     {
       title: 'Price',
@@ -109,7 +106,6 @@ export default function Index() {
       dataIndex: 'price',
       align: 'center',
       width: '10%',
-
     },
     {
       title: 'Buy Date',
@@ -119,7 +115,6 @@ export default function Index() {
       width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
 
     },
@@ -131,7 +126,6 @@ export default function Index() {
       width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
 
 
@@ -163,7 +157,7 @@ export default function Index() {
         </Col>
         <Col>
           <Space>
-            Select Created Date:
+            Select Buy Date:
             <RangePicker
               onChange={(x) => setDateRange(x)}
             />

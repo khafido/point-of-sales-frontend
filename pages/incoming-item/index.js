@@ -148,7 +148,6 @@ export default function Index() {
       width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -159,7 +158,6 @@ export default function Index() {
       width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -186,7 +184,6 @@ export default function Index() {
       width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
 
     },
@@ -198,10 +195,7 @@ export default function Index() {
       width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
-
-
     },
   ].filter(item => !item.hidden);
 
