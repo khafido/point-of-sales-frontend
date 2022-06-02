@@ -34,6 +34,9 @@ export default function Index() {
   const [form] = Form.useForm();
   const [submitParam, setSubmitParam] = useState('');
 
+  const [tableSortBy, setTableSortBy] = useState('default');
+  const [tableSortDir, setTableSortDir] = useState('ASC')
+
   const handleCancel = () => {
     setVisible(false);
   }
@@ -45,16 +48,18 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-  }, [tablePagination])
+  }, [tablePagination, tableSortBy, tableSortDir])
 
   const loadTableData = (
     searchBy = searchVal,
     page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
+    sortBy = tableSortBy,
+    sortDir = tableSortDir
   ) => {
     setTableLoading(true)
 
-    user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
+    user.listUser(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result => {
 
         if (result && result.result) {
@@ -67,21 +72,10 @@ export default function Index() {
             };
             return item;
           });
-
-          // const numberedData = users.map((item, index) => ({
-          //   ...item,
-          //   numrow: index + 1,
-          // }));
-
-          // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
-
+          
           setTableData(users);
           setTableTotalPages(result.result.totalPages);
         } else {
-          // notification.error({
-          //   message: result && result.message ? result.message : 'Error get user data',
-          //   duration: 0
-          // });
           console.log('Error get user data');
         }
         setTableLoading(false);
@@ -324,6 +318,21 @@ export default function Index() {
       })
 
     setVisible(false)
+  }
+
+  const onTableSort = (sorter) => {
+    if (sorter.field == 'name') {
+      setTableSortBy("default")
+    } else {
+      setTableSortBy(sorter.field)
+    }
+
+    setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC');
+    if (sorter.order === undefined) {
+      setTableSortDir('ASC');
+    }
+    
+    console.log('sorter', sorter);
   }
 
   return (
