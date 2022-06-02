@@ -374,6 +374,11 @@ export default function Index() {
       sorter: {
         compare: (a, b) => a.name - b.name,
       },
+      render: (text, record, index) => (
+        <div>
+          {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        </div>
+      )
     },
     {
       title: 'Quota',
@@ -412,6 +417,11 @@ export default function Index() {
         compare: (a, b) => a.name - b.name,
 
       },
+      render: (text, record, index) => (
+        <div>
+          {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        </div>
+      )
     },
     {
       title: 'Description',

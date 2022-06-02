@@ -145,7 +145,6 @@ export default function Index() {
       key: 'itemName',
       dataIndex: 'itemName',
       align: 'center',
-      width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
       },
@@ -155,7 +154,6 @@ export default function Index() {
       key: 'supllierName',
       dataIndex: 'supplierName',
       align: 'center',
-      width: '15%',
       sorter: {
         compare: (a, b) => a.name - b.name,
       },
@@ -165,7 +163,6 @@ export default function Index() {
       key: 'qty',
       dataIndex: 'qty',
       align: 'center',
-      width: '5%',
 
     },
     {
@@ -173,7 +170,11 @@ export default function Index() {
       key: 'price',
       dataIndex: 'price',
       align: 'center',
-      width: '10%',
+      render: (text, record, index) => (
+        <div>
+          {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        </div>
+      )
 
     },
     {
@@ -181,7 +182,6 @@ export default function Index() {
       key: 'buyDate',
       dataIndex: 'buyDate',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
       },
@@ -192,7 +192,6 @@ export default function Index() {
       key: 'expiryDate',
       dataIndex: 'expiryDate',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
       },
