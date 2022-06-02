@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@components/Layout'
-import { Button, Col, Descriptions, Divider, Form, Image, Input, Modal, notification, Popconfirm, Row, Select, Space, Table } from 'antd'
+import { Button, Col, Descriptions, Divider, Form, Image, Input, InputNumber, Modal, notification, Popconfirm, Row, Select, Space, Table } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import * as store from 'api/Store'
 import * as item from 'api/Item'
@@ -191,8 +191,8 @@ export default function Index() {
         setModalBody((
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
-              <Form.Item label='Store Item ID' name='storeItemId' >
-                <Input maxLength={255} readOnly />
+              <Form.Item label='Store Item ID' name='storeItemId' hidden>
+                <Input maxLength={255} disabled />
               </Form.Item>
               <Form.Item label='Store ID' name='storeId' hidden>
                 <Input maxLength={255} readOnly />
@@ -203,8 +203,11 @@ export default function Index() {
               <Form.Item label='Item Name' name='name' >
                 <Input maxLength={255} readOnly />
               </Form.Item>
-              <Form.Item label='Fixed Price' name='fixedPrice' hasFeedback required rules={[{required: true, message: 'Please input fixed price'}]}>
-                <Input maxLength={255} type='number' min={0}/>
+              <Form.Item label='Fixed Price' name='fixedPrice' required rules={[{required: true, message: 'Please input fixed price'}]}>
+                <InputNumber maxLength={255} min={0} prefix='Rp' style={{ width: '100%' }}
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                />
               </Form.Item>
               <Form.Item label='Price Mode' name='priceMode' hasFeedback required rules={[{required: true, message: 'Please input price mode'}]}>
                 <Select 
@@ -372,11 +375,21 @@ export default function Index() {
       key: 'fixedPrice',
       dataIndex: 'fixedPrice',
       sorter: (a, b) => null,
+      render: (text, record, index)=> (
+        <div>
+          {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        </div>
+      )
     },
     {
       title: 'By System Price',
       key: 'By System Price',
-      dataIndex: 'bySystemPrice'
+      dataIndex: 'bySystemPrice',
+      render: (text, record, index)=> (
+        <div>
+          {`Rp ${text}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+        </div>
+      )
     },
     {
       title: 'Current Price Mode',

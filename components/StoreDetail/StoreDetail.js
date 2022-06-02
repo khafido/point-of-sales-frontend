@@ -23,7 +23,9 @@ import { useSelector } from 'react-redux'
 const { Search } = Input
 
 const StoreDetail = ({ storeId }) => {
+
 	const currentUser = useSelector((state) => state.user)
+	const [currentRoles, setCurrentRoles] = useState([])
 
 	const [store, setStore] = useState(null)
 	const [employee, setEmployee] = useState(null)
@@ -52,6 +54,7 @@ const StoreDetail = ({ storeId }) => {
 			const userRoles = currentUser.roles.map((val) => {
 				return val.name
 			})
+			setCurrentRoles(userRoles)
 			const showEmployeesBool =
 				userRoles.includes('ROLE_ADMIN') ||
 				userRoles.includes('ROLE_MANAGER') ||
@@ -411,6 +414,7 @@ const StoreDetail = ({ storeId }) => {
 							/>
 						</Col>
 						<Col>
+						{currentRoles.includes('ROLE_MANAGER')?
 							<Button
 								type="primary"
 								onClick={() => {
@@ -420,6 +424,8 @@ const StoreDetail = ({ storeId }) => {
 							>
 								Add Employee
 							</Button>
+							: null
+						}							
 						</Col>
 					</Row>
 					<br />
