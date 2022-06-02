@@ -23,9 +23,9 @@ export async function listVoucher(isPaginated, page, size, searchVal, sortBy, so
     .catch(err => console.log(err))
 }
 
-export async function addVoucher({ name, code, value, startDate, endDate, minimumPurchase, description }) {
+export async function addVoucher({ name, code, value, quota, startDate, endDate, minimumPurchase, description }) {
   return apiClient
-    .post(url, { name, code, value, startDate, endDate, minimumPurchase, description })
+    .post(url, { name, code, value, quota, startDate, endDate, minimumPurchase, description })
     .then(response => {
       if (response) {
         return response.data
@@ -34,9 +34,9 @@ export async function addVoucher({ name, code, value, startDate, endDate, minimu
     .catch(err => console.log(err))
 }
 
-export async function updateVoucher(id, { name, code, value, startDate, endDate, minimumPurchase, description }) {
+export async function updateVoucher(id, { name, code, quota, value, startDate, endDate, minimumPurchase, description }) {
   return apiClient
-    .put(`${url}/${id}`, { name, code, value, startDate, endDate, minimumPurchase, description })
+    .put(`${url}/${id}`, { name, code, value, quota, startDate, endDate, minimumPurchase, description })
     .then(response => {
       if (response) {
         return response.data

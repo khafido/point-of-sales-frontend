@@ -40,6 +40,13 @@ export default function Index() {
   }
 
   const formRule = {
+    name: [
+      {
+        required: true,
+        message: 'Please input voucher name'
+      }
+    ]
+    ,
     code: [
       {
         required: true,
@@ -58,6 +65,42 @@ export default function Index() {
         }
       }
     ],
+    value: [
+      {
+        required: true,
+        message: 'Please input voucher value'
+      }
+    ],
+    quota: [
+      {
+        required: true,
+        message: 'Please input voucher quota'
+      }
+    ],
+    startDate: [
+      {
+        required: true,
+        message: 'Please input start date '
+      }
+    ],
+    endDate: [
+      {
+        required: true,
+        message: 'Please input end date'
+      }
+    ],
+    minimumPurchase: [
+      {
+        required: true,
+        message: 'Please input minimum purchase '
+      }
+    ],
+    description: [
+      {
+        required: true,
+        message: 'Please input description'
+      }
+    ],
   }
 
   const showModal = (type, id) => {
@@ -69,19 +112,24 @@ export default function Index() {
         setModalBody((
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
-              <Form.Item label='Name' name='name' hasFeedback required>
+              <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name}>
                 <Input maxLength={255} />
               </Form.Item>
               <Form.Item label='Code' name='code' hasFeedback required rules={formRule.code} >
                 <Input maxLength={255} />
               </Form.Item>
-              <Form.Item label='Value' name='value' hasFeedback required>
+              <Form.Item label='Value' name='value' hasFeedback required rules={formRule.value}>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </Form.Item>
-              <Form.Item label='Start Date' name='startDate' hasFeedback required>
+              <Form.Item label='Quota' name='quota' hasFeedback required rules={formRule.quota}>
+                <InputNumber min={1} style={{ width: '100%' }}
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                />
+              </Form.Item>
+              <Form.Item label='Start Date' name='startDate' hasFeedback required rules={formRule.startDate}>
                 <DatePicker className='' disabledDate={(current) => {
                   let customDate = moment().add(0, 'days');
                   return current && current > moment(customDate, "YYYY-MM-DD");
@@ -89,7 +137,7 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='End Date' name='endDate' hasFeedback required>
+              <Form.Item label='End Date' name='endDate' hasFeedback required rules={formRule.endDate}>
                 <DatePicker className='' disabledDate={(current) => {
                   let customDate = moment().add(0, 'days');
                   return current && current < moment(customDate, "YYYY-MM-DD");
@@ -97,13 +145,13 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required>
+              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required rules={formRule.minimumPurchase}>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </Form.Item>
-              <Form.Item label='Description' name='description' hasFeedback required>
+              <Form.Item label='Description' name='description' hasFeedback required rules={formRule.description}>
                 <TextArea maxLength={255} />
               </Form.Item>
 
@@ -119,6 +167,7 @@ export default function Index() {
           id,
           name: editData.name,
           value: editData.value,
+          quota: editData.quota,
           startDate: moment(editData.startDate),
           endDate: moment(editData.endDate),
           minimumPurchase: editData.minimumPurchase,
@@ -129,16 +178,21 @@ export default function Index() {
         setModalBody((
           <div>
             <Form layout='vertical' autoComplete='off' form={form}>
-              <Form.Item label='Name' name='name' hasFeedback required>
+              <Form.Item label='Name' name='name' hasFeedback required rules={formRule.name}>
                 <Input maxLength={255} />
               </Form.Item>
-              <Form.Item label='Value' name='value' hasFeedback required>
+              <Form.Item label='Value' name='value' hasFeedback required rules={formRule.value}>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </Form.Item>
-              <Form.Item label='Start Date' name='startDate' hasFeedback required>
+              <Form.Item label='Quota' name='quota' hasFeedback required rules={formRule.quota}>
+                <InputNumber min={1} style={{ width: '100%' }}
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                />
+              </Form.Item>
+              <Form.Item label='Start Date' name='startDate' hasFeedback required rules={formRule.startDate}>
                 <DatePicker className='' disabledDate={(current) => {
                   let customDate = moment().add(0, 'days');
                   return current && current > moment(customDate, "YYYY-MM-DD");
@@ -146,7 +200,7 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='End Date' name='endDate' hasFeedback required>
+              <Form.Item label='End Date' name='endDate' hasFeedback required rules={formRule.endDate}>
                 <DatePicker className='' disabledDate={(current) => {
                   let customDate = moment().add(0, 'days');
                   return current && current < moment(customDate, "YYYY-MM-DD");
@@ -154,13 +208,13 @@ export default function Index() {
                   style={{ width: '100%' }}
                 />
               </Form.Item>
-              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required>
+              <Form.Item label='Minimum Purchase' name='minimumPurchase' hasFeedback required rules={formRule.minimumPurchase}>
                 <InputNumber prefix='Rp' min={1} style={{ width: '100%' }}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </Form.Item>
-              <Form.Item label='Description' name='description' hasFeedback required>
+              <Form.Item label='Description' name='description' hasFeedback required rules={formRule.description}>
                 <TextArea maxLength={255} />
               </Form.Item>
 
@@ -298,11 +352,9 @@ export default function Index() {
       key: 'name',
       dataIndex: 'name',
       align: 'center',
-      width: '30%',
       fixed: 'left',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -310,11 +362,8 @@ export default function Index() {
       key: 'code',
       dataIndex: 'code',
       align: 'center',
-      width: '30%',
-      hidden: true,
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -322,10 +371,17 @@ export default function Index() {
       key: 'value',
       dataIndex: 'value',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
+      },
+    },
+    {
+      title: 'Quota',
+      key: 'quota',
+      dataIndex: 'quota',
+      align: 'center',
+      sorter: {
+        compare: (a, b) => a.name - b.name
       },
     },
     {
@@ -333,10 +389,8 @@ export default function Index() {
       key: 'startDate',
       dataIndex: 'startDate',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {
@@ -344,10 +398,9 @@ export default function Index() {
       key: 'endDate',
       dataIndex: 'endDate',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
+
       },
     },
     {
@@ -355,10 +408,9 @@ export default function Index() {
       key: 'minimumPurchase',
       dataIndex: 'minimumPurchase',
       align: 'center',
-      width: '50%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
+
       },
     },
     {
@@ -366,10 +418,9 @@ export default function Index() {
       key: 'description',
       dataIndex: 'description',
       align: 'center',
-      width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
+
       },
     },
     {
@@ -377,11 +428,9 @@ export default function Index() {
       dataIndex: 'action',
       key: 'action',
       align: 'center',
-      width: '30%',
       fixed: 'right',
       render: (t, r) => (
         <Space size="middle">
-
           <Button type='primary' icon={<EditOutlined />} onClick={() => showModal('edit', r.id)}>Edit</Button>
           <Popconfirm
             title={`Confirm to delete ${r.name}`}
@@ -438,6 +487,7 @@ export default function Index() {
         onChange={(pagination, filter, sorter) => {
           onSortAndPagination(pagination, sorter)
         }}
+        scroll={{ x: 1300 }}
 
       />
       <Modal
