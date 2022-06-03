@@ -216,7 +216,6 @@ export default function Index() {
       width: '30%',
       sorter: {
         compare: (a, b) => a.name - b.name,
-        multiple: 1,
       },
     },
     {

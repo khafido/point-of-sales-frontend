@@ -34,6 +34,9 @@ export default function Index() {
   const [form] = Form.useForm();
   const [submitParam, setSubmitParam] = useState('');
 
+  const [tableSortBy, setTableSortBy] = useState('default');
+  const [tableSortDir, setTableSortDir] = useState('ASC')
+
   const handleCancel = () => {
     setVisible(false);
   }
@@ -45,19 +48,21 @@ export default function Index() {
   useEffect(() => {
     loadTableData()
     setSearchLoading(false)
-  }, [tablePagination])
+  }, [tablePagination, tableSortBy, tableSortDir])
 
   const loadTableData = (
     searchBy = searchVal,
     page = tablePagination.page - 1,
     pageSize = tablePagination.pageSize,
+    sortBy = tableSortBy,
+    sortDir = tableSortDir
   ) => {
     setTableLoading(true)
 
-    user.listUser(true, page, pageSize, searchBy, 'default', 'ASC')
+    user.listUser(true, page, pageSize, searchBy, sortBy, sortDir)
       .then(result => {
 
-        if (result.result) {
+        if (result && result.result) {
           let users = result.result.currentPageContent.map((item, key) => {
             item.key = item.id;
             item.numrow = key + 1;
@@ -67,24 +72,14 @@ export default function Index() {
             };
             return item;
           });
-
-          // const numberedData = users.map((item, index) => ({
-          //   ...item,
-          //   numrow: index + 1,
-          // }));
-
-          // const sortedData = users.sort((a, b) => a.name.localeCompare(b.name));
-
+          
           setTableData(users);
           setTableTotalPages(result.result.totalPages);
-          setTableLoading(false);
-          setSearchLoading(false);
         } else {
-          notification.error({
-            message: result.message ? result.message : 'Error get user data',
-            duration: 0
-          });
+          console.log('Error get user data');
         }
+        setTableLoading(false);
+        setSearchLoading(false);
       })
   }
 
@@ -95,15 +90,13 @@ export default function Index() {
     })
   }
 
-  const onSearchData = (e) => {
-    if (e.key === 'Enter') {
-      setSearchLoading(true)
-      setSearchVal(e.target.value)
-      setTablePagination({
-        page: 1,
-        pageSize: 10
-      })
-    }
+  const onSearchData = (value) => {
+    setSearchLoading(true)
+    setSearchVal(value)
+    setTablePagination({
+      page: 1,
+      pageSize: 10
+    })
   }
 
   const columns = [
@@ -124,7 +117,7 @@ export default function Index() {
       title: 'Name',
       key: 'name',
       dataIndex: 'name',
-      fixed: 'left',
+      // fixed: 'left',
       width: 100,
       sorter: {
         compare: (a, b) => a.name - b.name,
@@ -202,7 +195,7 @@ export default function Index() {
       title: 'Action',
       key: 'action',
       dataIndex: 'action',
-      fixed: 'right',
+      // fixed: 'right',
       width: 200,
       render: (t, r) =>
         <>
@@ -258,28 +251,6 @@ export default function Index() {
     setTableData(numberedFilteredData);
   }
 
-  const assignOwner = (id) => {
-    alert(`Assign Owner to ${id}`);
-  }
-
-  const { confirm } = Modal;
-
-  const deleteUserModal = (id, name) => {
-    confirm({
-      title: `Are you sure want to delete ${name}?`,
-      icon: <ExclamationCircleOutlined />,
-      content: '',
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk() {
-        deleteUser(id);
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  }
   const [options, setOptions] = useState([])
   useEffect(() => {
     axios.get('http://localhost:8080/api/v1/role')
@@ -349,13 +320,33 @@ export default function Index() {
     setVisible(false)
   }
 
+  const onTableSort = (sorter) => {
+    if (sorter.field == 'name') {
+      setTableSortBy("default")
+    } else {
+      setTableSortBy(sorter.field)
+    }
+
+    setTableSortDir(sorter.order == 'ascend' ? 'ASC' : 'DESC');
+    if (sorter.order === undefined) {
+      setTableSortDir('ASC');
+    }
+    
+    console.log('sorter', sorter);
+  }
+
   return (
     <Layout title="User" subtitle="">
       <Row>
         <Col span={6}>
           <Search
             placeholder="Search User"
-            onKeyDown={onSearchData}
+            onSearch={onSearchData}
+            onChange={(e) => {
+                if (e.target.value === '') {
+                  onSearchData(e.target.value);
+                }                            
+            }}
           />
         </Col>
         <Col span={18}>
@@ -382,7 +373,10 @@ export default function Index() {
           pageSize: tablePagination.pageSize,
           showSizeChanger: true
         }}
-        onChange={onChange}
+        // onChange={onChange}
+        onChange={(pagination, filter, sorter) => {
+					onTableSort(sorter)
+				}}
         scroll={{ x: 1300 }} />
 
       <Modal

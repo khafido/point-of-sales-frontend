@@ -31,17 +31,27 @@ export default function Login() {
     const onFinish = (values) => {
         authAPI.login(values).then(res => {
             if (res.status === 200) {
-                const user = res.data.result;
-
-                cookie.set('token', user.token);
-                cookie.set('id', user.id);
-                cookie.set('username', user.username);
-                cookie.set('email', user.email);
+                const result = res.data.result;
+                console.log(result);
+                cookie.set('token', result.token);
+                cookie.set('id', result.user.id);
+                cookie.set('username', result.user.username);
+                cookie.set('email', result.user.email);
+                if (result.storeIdEmployee) {
+                    cookie.set('store_id_employee', result.storeIdEmployee);
+                }
+                                    
+                if (result.storeIdManager) {                                
+                    cookie.set('store_id_manager', result.storeIdManager);
+                }
+                
+                const roles = result.user.roles.map(role => role.name.slice(5));
+                cookie.set('roles', JSON.stringify(roles));
+                // console.log(JSON.parse(cookie.get('roles')));
 
                 dispatch(login());
-                userAPI.getById(user.id).then(res => {
-                    dispatch(setUser(res));
-                });
+                dispatch(setUser(result.user));
+                
                 router.push('/');
             } else {
                 dispatch(login_error("Invalid username or password"));

@@ -29,6 +29,7 @@ import {
 	UserSwitchOutlined,
 } from '@ant-design/icons'
 import { duration } from 'moment'
+import { useRouter } from 'next/router'
 
 const { Search } = Input
 const { Option } = Select
@@ -51,7 +52,6 @@ const rules = {
 export default function Index() {
 	const [mode, setMode] = useState('Create')
 	const [visible, setVisible] = useState(false)
-	const [visibleDetail, setVisibleDetail] = useState(false)
 	const [visibleAssignManager, setVisibleAssignManager] = useState(false)
 	const [storeId, setStoreId] = useState(null)
 	const [storeData, setStoreData] = useState(null)
@@ -67,8 +67,8 @@ export default function Index() {
 	const [sortDir, setSortDir] = useState('')
 	const [totalPage, setTotalPage] = useState(1)
 
+	const router = useRouter()
 	const [form] = Form.useForm()
-	const [assignEmployeeForm] = Form.useForm()
 	const [assignManagerForm] = Form.useForm()
 
 	useEffect(() => {
@@ -106,8 +106,7 @@ export default function Index() {
 	}
 
 	const fetchManager = () => {
-		role
-			.getRoleById(3)
+		role.getRoleById(3)
 			.then((result) => {
 				console.log(result.result)
 				setRoleManagerData(result.result)
@@ -188,15 +187,6 @@ export default function Index() {
 			})
 	}
 
-	const onAssignEmployee = (values) => {
-		console.log(values)
-	}
-
-	const onShowDetailStore = (store) => {
-		setVisibleDetail(true)
-		console.log('Showing Detail Store : ', store.id)
-	}
-
 	const onAssignManager = (data) => {
 		assignManagerForm.setFieldsValue({
 			storeId: data.id,
@@ -213,6 +203,11 @@ export default function Index() {
 		setSortDir(sorter.order == 'ascend' ? 'asc' : 'desc')
 		setPage(pagination.current)
 		console.log('SortBy', sorter.field, 'SortDir', sorter.order)
+	}
+
+	const onShowDetailStore = (record) => {
+		router.push(`/store/detail/${record.id}`)
+		console.log(record)
 	}
 
 	const onSizeChange = (current, size) => {
@@ -331,92 +326,6 @@ export default function Index() {
 		},
 	]
 
-	const storeDetailColumns = [
-		{
-			title: 'Name',
-			key: 'name',
-		},
-		{
-			title: 'Role',
-			key: 'role',
-		},
-		{
-			title: 'Action',
-			key: 'action',
-		},
-	]
-
-	const DetailStore = () => {
-		return (
-			<Modal
-				visible={visibleDetail}
-				title={`Detail Store`}
-				footer={null}
-				onCancel={() => {
-					setVisibleDetail(false)
-					assignEmployeeForm.resetFields()
-				}}
-				// onOk={() => {
-				// 	form
-				// 		.validateFields()
-				// 		.then((values) => {
-				// 			form.resetFields()
-				// 			onSave(values)
-				// 		})
-				// 		.catch((info) => {
-				// 			console.log('Validate Failed:', info)
-				// 		})
-				// }}
-			>
-				<Form
-					form={assignEmployeeForm}
-					layout="inline"
-					name="assignEmployeeForm"
-					initialValues={{
-						employee: '',
-						role: '',
-					}}
-					onFinish={(value) => {
-						//handle assign store employee
-						onAssignEmployee(value)
-					}}
-				>
-					<Form.Item name="employee" rules={[{ required: true }]}>
-						<Select
-							placeholder="Select an employee"
-							showSearch
-							style={{ width: 100 }}
-						>
-							<Option value="employeeid1">Employee 1</Option>
-							<Option value="employeeid2">Employee 2</Option>
-							<Option value="employeeid3">Employee 3</Option>
-						</Select>
-					</Form.Item>
-					<Form.Item
-						name="role"
-						rules={[{ required: true }]}
-						style={{ width: 100 }}
-					>
-						<Select placeholder="Select a role">
-							<Option value="role2">Cashier</Option>
-							<Option value="role">Stockist</Option>
-						</Select>
-					</Form.Item>
-					<Form.Item>
-						<Button
-							type="primary"
-							htmlType="submit"
-							icon={<UserAddOutlined />}
-							style={{ width: 50 }}
-						></Button>
-					</Form.Item>
-				</Form>
-				<br />
-				<Table columns={storeDetailColumns} dataSource={null} />
-			</Modal>
-		)
-	}
-
 	const AssignManagerModal = () => {
 		return (
 			<Modal
@@ -426,10 +335,8 @@ export default function Index() {
 				onOk={() => {
 					assignManagerForm.validateFields().then((value) => {
 						setLoadingSubmitManager(true)
-						assignManager({
-							storeId: value.storeId,
-							userId: value.manager,
-						}).then((result) => {
+						assignManager(value.storeId, value.manager)
+						.then((result) => {
 							setVisibleAssignManager(false)
 							setLoadingSubmitManager(false)
 							if (result.status === 'SUCCESS') {
@@ -556,7 +463,6 @@ export default function Index() {
 				}}
 				mode={mode}
 			/>
-			<DetailStore />
 			<AssignManagerModal />
 		</Layout>
 	)

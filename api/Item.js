@@ -2,7 +2,7 @@ import apiClient from "api";
 
 const url = '/item'
 
-export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection){
+export async function listItems(isPaginated, page, size, searchValue, sortBy, sortDirection, fullInformation = true){
     return apiClient
         .get(url, {
             params: {
@@ -11,7 +11,8 @@ export async function listItems(isPaginated, page, size, searchValue, sortBy, so
                 size,
                 searchValue,
                 sortBy,
-                sortDirection
+                sortDirection,
+                fullInformation
         }})
         .then(response => {
             if(response){
@@ -22,7 +23,7 @@ export async function listItems(isPaginated, page, size, searchValue, sortBy, so
         .catch(err => console.log(err))
 }
 
-export async function addItem({name, image, barcode, category, packaging}){
+export async function addItem({ name, image, barcode, category, packaging }) {
     return apiClient
         .post(url, {
             name,
@@ -37,7 +38,7 @@ export async function addItem({name, image, barcode, category, packaging}){
         .catch(err => console.log(err))
 }
 
-export async function updateItem(id, {name, image, barcode, category, packaging}){
+export async function updateItem(id, { name, image, barcode, category, packaging }) {
     return apiClient
         .put(`${url}/${id}`, {
             name,
@@ -47,7 +48,7 @@ export async function updateItem(id, {name, image, barcode, category, packaging}
             packaging
         })
         .then(response => {
-            if(response){
+            if (response) {
                 return response.data
             }
             return false
@@ -55,11 +56,11 @@ export async function updateItem(id, {name, image, barcode, category, packaging}
         .catch(err => console.log(err))
 }
 
-export async function deleteItem(id){
+export async function deleteItem(id) {
     return apiClient
         .patch(`${url}/${id}`)
         .then(response => {
-            if(response){
+            if (response) {
                 return response.data
             }
             return false
@@ -67,20 +68,65 @@ export async function deleteItem(id){
         .catch(err => console.log(err))
 }
 
-export async function checkBarcodeOnAdd(barcode){
+export async function checkBarcodeOnAdd(barcode) {
     return apiClient
-        .get(`${url}/check-barcode-add`, {params: {barcode}})
+        .get(`${url}/check-barcode-add`, { params: { barcode } })
         .then(response => {
             return response.data
         })
         .catch(err => console.log(err))
 }
 
-export async function checkBarcodeOnEdit(id, barcode){
+export async function checkBarcodeOnEdit(id, barcode) {
     return apiClient
-        .get(`${url}/check-barcode-update/${id}`, {params: {barcode}})
+        .get(`${url}/check-barcode-update/${id}`, { params: { barcode } })
         .then(response => {
             return response.data
         })
         .catch(err => console.log(err))
+}
+
+
+export async function addStock(req) {
+    return apiClient
+        .post(`${url}/stock/`, req, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '3600',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+        })
+        .then(response => {
+            if (response) {
+                return response.data
+            }
+            return false
+        })
+        .catch(err => console.log(err))
+}
+
+export async function getIncomingItem(isPaginated, page, size, search, sortBy, sortDirection, start, end) {
+    return apiClient
+        .get(`${url}/stock`, {
+            params: {
+                isPaginated,
+                page,
+                size,
+                search,
+                sortBy,
+                sortDirection,
+                start,
+                end
+            }
+        })
+        .then(response => {
+            if (response) {
+                return response.data
+            }
+            return false
+        })
+        .catch(err => console.log(err))
+
 }
